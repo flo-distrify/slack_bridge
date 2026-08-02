@@ -99,9 +99,29 @@ def ensure_rule(title: str, **overrides):
 	return rule
 
 
+def fill_mandatory(doc):
+	"""Populate mandatory fields a site may have added via customization.
+
+	The suite runs on real sites, not just clean CI benches, and another app can make
+	a custom field on ToDo mandatory. Filling text-ish mandatory fields keeps the
+	fixture usable without pinning the tests to any one site's customizations.
+	"""
+	for field in doc.meta.fields:
+		if not field.reqd or doc.get(field.fieldname):
+			continue
+
+		if field.fieldtype in ("Data", "Small Text", "Text", "Long Text", "Text Editor"):
+			doc.set(field.fieldname, "Slack Bridge test")
+		elif field.fieldtype == "Select" and field.options:
+			choices = [o for o in field.options.split("\n") if o.strip()]
+			if choices:
+				doc.set(field.fieldname, choices[0])
+
+	return doc
+
+
 def make_todo(description: str = "Check the shipment"):
-	todo = frappe.get_doc(
-		{"doctype": "ToDo", "description": description, "status": "Open"}
-	)
+	todo = frappe.get_doc({"doctype": "ToDo", "description": description, "status": "Open"})
+	fill_mandatory(todo)
 	todo.insert(ignore_permissions=True)
 	return todo
