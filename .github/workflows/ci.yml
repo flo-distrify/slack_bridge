@@ -23,8 +23,6 @@ jobs:
       matrix:
         # The app ships one codebase for both supported Frappe majors.
         include:
-          - frappe-branch: version-15
-            python-version: '3.11'
           - frappe-branch: version-16
             python-version: '3.12'
 

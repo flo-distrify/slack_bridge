@@ -23,7 +23,7 @@ build-backend = "flit_core.buildapi"
 
 # Frappe Cloud validates this on install and on bench update.
 [tool.bench.frappe-dependencies]
-frappe = ">=15.0.0,<17.0.0-dev"
+frappe = ">=16.0.0,<17.0.0-dev"
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
