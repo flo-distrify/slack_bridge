@@ -131,10 +131,23 @@ class SlackClient:
 		if not data.get("ok"):
 			code = data.get("error", "unknown_error")
 			detail = ""
+
+			# missing_scope names the scopes at fault; without them the admin has no
+			# idea which permission to add or that a reinstall is required.
+			if code == "missing_scope" and data.get("needed"):
+				missing = sorted(
+					set((data.get("needed") or "").split(","))
+					- set((data.get("provided") or "").split(","))
+				)
+				detail = _(
+					" — this Slack app is missing the scope(s) {0}. Add them to the app "
+					"(or re-apply the generated manifest) and reinstall it to your workspace."
+				).format(", ".join(missing))
+
 			# invalid_blocks etc. put the useful part in response_metadata.messages
 			messages = (data.get("response_metadata") or {}).get("messages")
 			if messages:
-				detail = " — " + "; ".join(messages)
+				detail += " — " + "; ".join(messages)
 
 			raise SlackError(
 				_("Slack API {0} failed: {1}{2}").format(method, code, detail),
