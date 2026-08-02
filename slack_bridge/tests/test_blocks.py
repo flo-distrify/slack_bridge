@@ -63,3 +63,34 @@ class TestBlocks(SlackBridgeTestCase):
 
 	def test_fallback_text_never_empty(self):
 		self.assertTrue(bk.fallback_text([{"type": "divider"}]))
+
+
+class TestClientErrors(SlackBridgeTestCase):
+	def test_missing_scope_names_the_missing_scopes(self):
+		from slack_bridge.slack.client import SlackClient, SlackError
+		from slack_bridge.tests.fixtures import ensure_workspace, fake_slack
+
+		ensure_workspace()
+
+		payload = {
+			"ok": False,
+			"error": "missing_scope",
+			"needed": "channels:read,groups:read",
+			"provided": "chat:write",
+		}
+
+		with fake_slack(payload), self.assertRaises(SlackError) as caught:
+			SlackClient("Test Workspace").call("conversations.list")
+
+		message = str(caught.exception)
+		self.assertIn("channels:read", message)
+		self.assertIn("groups:read", message)
+		self.assertIn("reinstall", message)
+		# Scopes the app already has must not be reported as missing.
+		self.assertNotIn("chat:write,", message)
+
+	def test_permanent_errors_are_not_retried(self):
+		from slack_bridge.slack.client import SlackError
+
+		self.assertTrue(SlackError("x", code="channel_not_found").is_permanent)
+		self.assertFalse(SlackError("x", code="service_unavailable").is_permanent)
