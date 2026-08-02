@@ -49,6 +49,8 @@ Use `--branch version-16` on Frappe v16.
 
 ## Setup
 
+Everything is configured from the **Slack Bridge** workspace in the Desk sidebar.
+
 **[Full setup guide →](docs/setup.md)** — the short version:
 
 1. Open **Slack Workspace** → new record. Give it a name and save.

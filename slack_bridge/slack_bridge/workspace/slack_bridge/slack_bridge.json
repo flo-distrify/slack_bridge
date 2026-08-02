@@ -1,0 +1,226 @@
+{
+ "app": "slack_bridge",
+ "charts": [],
+ "content": "[{\"id\": \"sb01blockhead\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Slack Bridge</b></span>\", \"col\": 12}}, {\"id\": \"sb02blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Notification Rule\", \"col\": 3}}, {\"id\": \"sb03blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Workspace\", \"col\": 3}}, {\"id\": \"sb04blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Message Log\", \"col\": 3}}, {\"id\": \"sb05blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Bridge Settings\", \"col\": 3}}, {\"id\": \"sb06blockspac\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"sb07blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}, {\"id\": \"sb08blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Notifications\", \"col\": 4}}, {\"id\": \"sb09blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Interactivity\", \"col\": 4}}, {\"id\": \"sb10blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Logs\", \"col\": 4}}]",
+ "creation": "2026-08-02 10:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "integration",
+ "idx": 0,
+ "indicator_color": "blue",
+ "is_hidden": 0,
+ "label": "Slack Bridge",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Setup",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "description": "Connect a Slack workspace and generate its app manifest",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Workspace",
+   "link_count": 0,
+   "link_to": "Slack Workspace",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Global switches, retries and log retention",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Bridge Settings",
+   "link_count": 0,
+   "link_to": "Slack Bridge Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Channels synced from Slack",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Channel",
+   "link_count": 0,
+   "link_to": "Slack Channel",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Which Slack account maps to which ERP user",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack User",
+   "link_count": 0,
+   "link_to": "Slack User",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Notifications",
+   "link_count": 1,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "description": "Send documents to channels and people",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Notification Rule",
+   "link_count": 0,
+   "link_to": "Slack Notification Rule",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Interactivity",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "description": "What a button does to a document",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Action",
+   "link_count": 0,
+   "link_to": "Slack Action",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Modal forms that create or update documents",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Form",
+   "link_count": 0,
+   "link_to": "Slack Form",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Route slash commands",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Command Route",
+   "link_count": 0,
+   "link_to": "Slack Command Route",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Rich previews for document links",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Unfurl Rule",
+   "link_count": 0,
+   "link_to": "Slack Unfurl Rule",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Logs",
+   "link_count": 2,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "description": "Every outbound message and its delivery status",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Message Log",
+   "link_count": 0,
+   "link_to": "Slack Message Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "description": "Every click, command and modal submission",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Interaction Log",
+   "link_count": 0,
+   "link_to": "Slack Interaction Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Bridge",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 25.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "List",
+   "label": "Slack Notification Rule",
+   "link_to": "Slack Notification Rule",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Slack Workspace",
+   "link_to": "Slack Workspace",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Slack Message Log",
+   "link_to": "Slack Message Log",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Slack Bridge Settings",
+   "link_to": "Slack Bridge Settings",
+   "type": "DocType"
+  }
+ ],
+ "title": "Slack Bridge",
+ "type": "Workspace"
+}

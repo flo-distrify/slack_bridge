@@ -21,6 +21,10 @@ dependencies and does not require ERPNext.
 
 ---
 
+Everything the app adds lives in one place: the **Slack Bridge** workspace in the Desk
+sidebar. It groups the doctypes into Setup, Notifications, Interactivity and Logs, with
+shortcuts to the four you touch most.
+
 ## 2. Create the Slack app from the manifest
 
 You create the Slack app inside your own workspace. Nothing is routed through a
