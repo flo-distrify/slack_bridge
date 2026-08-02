@@ -8,7 +8,7 @@ Frappe Cloud marketplace guidelines, app authoring guidelines and app versioning
 | Requirement | Status |
 | --- | --- |
 | Open source licence (MIT or GPL-compatible) | Done — AGPL-3.0 in `license.txt` |
-| Hosted on GitHub, owned by the publisher account | **To do** — push to `github.com/automates-ug/slack_bridge` |
+| Hosted on GitHub, owned by the publisher account | **To do** — push to `github.com/flo-distrify/slack_bridge` |
 | Unique app name on the marketplace | **To verify** before first submission |
 | `pyproject.toml` at repo root with `[tool.bench.frappe-dependencies]` | Done — `frappe = ">=15.0.0,<17.0.0-dev"` |
 | Branch per Frappe major (`version-15`, `version-16`) | **To do** at push time |

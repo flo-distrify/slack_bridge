@@ -41,13 +41,15 @@ and people double-click buttons.
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app https://github.com/automates-ug/slack_bridge --branch version-15
+bench get-app https://github.com/flo-distrify/slack_bridge --branch version-15
 bench --site your-site install-app slack_bridge
 ```
 
 Use `--branch version-16` on Frappe v16.
 
 ## Setup
+
+**[Full setup guide →](docs/setup.md)** — the short version:
 
 1. Open **Slack Workspace** → new record. Give it a name and save.
 2. Click **Copy Manifest**, then open [api.slack.com/apps](https://api.slack.com/apps) →
@@ -57,12 +59,20 @@ Use `--branch version-16` on Frappe v16.
 4. Click **Test Connection**, then **Sync Users & Channels**, then
    **Create Starter Commands**.
 5. Re-paste the manifest in Slack once so it registers your slash command.
+6. In Slack, `/invite @ERP Bridge` into the channels you want to use, then run
+   `/erp help` to check it all works.
 
 Your site must be reachable from the internet over HTTPS — Slack delivers events to it.
 
 You create the Slack app inside your own workspace, so it counts as an internal app: no
 third-party service ever holds your token, and you are not subject to Slack's rate limits
 for commercially distributed non-Marketplace apps.
+
+## Documentation
+
+- [Setup guide](docs/setup.md) — installation, Slack app creation, first rule, approval
+  buttons, slash commands, unfurls, operations and troubleshooting
+- [Marketplace checklist](docs/marketplace-checklist.md) — Frappe Cloud submission status
 
 ## Example: a purchase order approval
 

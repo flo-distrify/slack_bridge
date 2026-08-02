@@ -13,9 +13,9 @@ dynamic = ["version"]
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/automates-ug/slack_bridge"
-Documentation = "https://github.com/automates-ug/slack_bridge#readme"
-Issues = "https://github.com/automates-ug/slack_bridge/issues"
+Homepage = "https://github.com/flo-distrify/slack_bridge"
+Documentation = "https://github.com/flo-distrify/slack_bridge#readme"
+Issues = "https://github.com/flo-distrify/slack_bridge/issues"
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
