@@ -1,0 +1,184 @@
+{
+ "actions": [
+  {
+   "action": "slack_bridge.api.outbox.retry_action",
+   "action_type": "Server Action",
+   "label": "Retry Now"
+  }
+ ],
+ "allow_rename": 0,
+ "autoname": "hash",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "status",
+  "workspace",
+  "channel_id",
+  "cb_main",
+  "rule",
+  "reference_doctype",
+  "reference_name",
+  "sb_slack",
+  "message_ts",
+  "thread_ts",
+  "cb_slack",
+  "dedupe_key",
+  "sb_delivery",
+  "attempts",
+  "next_attempt_at",
+  "cb_delivery",
+  "last_error",
+  "sb_payload",
+  "payload"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "Queued",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Queued\nSent\nFailed\nDead\nSkipped",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "fieldname": "channel_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Channel"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "rule",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Rule",
+   "options": "Slack Notification Rule"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Reference Type",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Dynamic Link",
+   "in_list_view": 1,
+   "label": "Reference Name",
+   "options": "reference_doctype"
+  },
+  {
+   "fieldname": "sb_slack",
+   "fieldtype": "Section Break",
+   "label": "Slack"
+  },
+  {
+   "fieldname": "message_ts",
+   "fieldtype": "Data",
+   "label": "Message Timestamp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "thread_ts",
+   "fieldtype": "Data",
+   "label": "Thread Timestamp",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_slack",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dedupe_key",
+   "fieldtype": "Data",
+   "label": "Dedupe Key",
+   "no_copy": 1,
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "sb_delivery",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "fieldname": "attempts",
+   "fieldtype": "Int",
+   "label": "Attempts",
+   "read_only": 1
+  },
+  {
+   "fieldname": "next_attempt_at",
+   "fieldtype": "Datetime",
+   "label": "Next Attempt",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cb_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_error",
+   "fieldtype": "Small Text",
+   "label": "Last Error",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_payload",
+   "fieldtype": "Section Break",
+   "label": "Payload"
+  },
+  {
+   "fieldname": "payload",
+   "fieldtype": "Code",
+   "label": "Payload",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Message Log",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  }
+ ],
+ "search_fields": "reference_name,channel_id",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

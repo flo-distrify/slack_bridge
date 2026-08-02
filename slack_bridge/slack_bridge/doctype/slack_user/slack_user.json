@@ -1,0 +1,116 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:{workspace}-{slack_user_id}",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "workspace",
+  "slack_user_id",
+  "cb_user",
+  "slack_username",
+  "slack_real_name",
+  "mapping_source",
+  "enabled",
+  "sb_perm",
+  "allow_actions"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Frappe User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "fieldname": "slack_user_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Slack User ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_user",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "slack_username",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Slack Username"
+  },
+  {
+   "fieldname": "slack_real_name",
+   "fieldtype": "Data",
+   "label": "Slack Real Name"
+  },
+  {
+   "default": "Email Match",
+   "fieldname": "mapping_source",
+   "fieldtype": "Select",
+   "label": "Mapping Source",
+   "options": "Email Match\nManual\nAccount Link"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "sb_perm",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "default": "1",
+   "description": "When enabled, this person may trigger document changes from Slack. Actions always run with their own Frappe permissions.",
+   "fieldname": "allow_actions",
+   "fieldtype": "Check",
+   "label": "Allow Actions from Slack"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack User",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "user,slack_username,slack_user_id",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "user",
+ "track_changes": 1
+}

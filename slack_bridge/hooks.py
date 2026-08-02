@@ -5,254 +5,66 @@ app_description = "Bidirectional Slack connector for Frappe: config-driven notif
 app_email = "operations@distrify.io"
 app_license = "agpl-3.0"
 
-# Apps
-# ------------------
+# ---------------------------------------------------------------------------
+# Install
+# ---------------------------------------------------------------------------
+after_install = "slack_bridge.install.after_install"
+after_migrate = "slack_bridge.install.after_migrate"
 
-# required_apps = []
-
-# Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "slack_bridge",
-# 		"logo": "/assets/slack_bridge/logo.png",
-# 		"title": "Slack Bridge",
-# 		"route": "/slack_bridge",
-# 		"has_permission": "slack_bridge.api.permission.has_app_permission"
-# 	}
-# ]
-
-# Includes in <head>
-# ------------------
-
-# include js, css files in header of desk.html
-# app_include_css = "/assets/slack_bridge/css/slack_bridge.css"
-# app_include_js = "/assets/slack_bridge/js/slack_bridge.js"
-
-# include js, css files in header of web template
-# web_include_css = "/assets/slack_bridge/css/slack_bridge.css"
-# web_include_js = "/assets/slack_bridge/js/slack_bridge.js"
-
-# include custom scss in every website theme (without file extension ".scss")
-# website_theme_scss = "slack_bridge/public/scss/website"
-
-# include js, css files in header of web form
-# webform_include_js = {"doctype": "public/js/doctype.js"}
-# webform_include_css = {"doctype": "public/css/doctype.css"}
-
-# include js in page
-# page_js = {"page" : "public/js/file.js"}
-
-# include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
-# doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
-# doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
-
-# Svg Icons
-# ------------------
-# include app icons in desk
-# app_include_icons = "slack_bridge/public/icons.svg"
-
-# Home Pages
-# ----------
-
-# application home page (will override Website Settings)
-# home_page = "login"
-
-# website user home page (by Role)
-# role_home_page = {
-# 	"Role": "home_page"
-# }
-
-# Generators
-# ----------
-
-# automatically create page for each record of this doctype
-# website_generators = ["Web Page"]
-
-# automatically load and sync documents of this doctype from downstream apps
-# importable_doctypes = [doctype_1]
-
-# Jinja
-# ----------
-
-# add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "slack_bridge.utils.jinja_methods",
-# 	"filters": "slack_bridge.utils.jinja_filters"
-# }
-
-# Installation
-# ------------
-
-# before_install = "slack_bridge.install.before_install"
-# after_install = "slack_bridge.install.after_install"
-
-# Uninstallation
-# ------------
-
-# before_uninstall = "slack_bridge.uninstall.before_uninstall"
-# after_uninstall = "slack_bridge.uninstall.after_uninstall"
-
-# Integration Setup
-# ------------------
-# To set up dependencies/integrations with other apps
-# Name of the app being installed is passed as an argument
-
-# before_app_install = "slack_bridge.utils.before_app_install"
-# after_app_install = "slack_bridge.utils.after_app_install"
-
-# Integration Cleanup
-# -------------------
-# To clean up dependencies/integrations with other apps
-# Name of the app being uninstalled is passed as an argument
-
-# before_app_uninstall = "slack_bridge.utils.before_app_uninstall"
-# after_app_uninstall = "slack_bridge.utils.after_app_uninstall"
-
-# Build
-# ------------------
-# To hook into the build process
-
-# after_build = "slack_bridge.build.after_build"
-
-# Desk Notifications
-# ------------------
-# See frappe.core.notifications.get_notification_config
-
-# notification_config = "slack_bridge.notifications.get_notification_config"
-
-# Permissions
-# -----------
-# Permissions evaluated in scripted ways
-
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
+# ---------------------------------------------------------------------------
+# Document events
 #
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+# The wildcard handler is on the hot path of every document write in the site, so
+# it bails in well under a millisecond when no rule targets the doctype: one Redis
+# hash lookup against a cache that is invalidated whenever a rule changes.
+# ---------------------------------------------------------------------------
+doc_events = {
+	"*": {
+		"after_insert": "slack_bridge.engine.rules.on_doc_event",
+		"on_update": "slack_bridge.engine.rules.on_doc_event",
+		"on_submit": "slack_bridge.engine.rules.on_doc_event",
+		"on_cancel": "slack_bridge.engine.rules.on_doc_event",
+		"on_trash": "slack_bridge.engine.rules.on_doc_event",
+		"on_update_after_submit": "slack_bridge.engine.rules.on_doc_event",
+		"on_change": "slack_bridge.engine.rules.on_doc_event",
+	},
+	"User": {
+		"after_insert": "slack_bridge.engine.users.on_user_change",
+		"on_update": "slack_bridge.engine.users.on_user_change",
+	},
+}
 
-# Document Events
-# ---------------
-# Hook on document methods and events
+# ---------------------------------------------------------------------------
+# Scheduled tasks
+# ---------------------------------------------------------------------------
+scheduler_events = {
+	"cron": {
+		# Deliver queued messages with exponential backoff.
+		"* * * * *": ["slack_bridge.engine.outbox.drain"],
+		# Minute-offset rules (Slack mirrors core Notification's five-minute tick).
+		"0/5 * * * *": ["slack_bridge.engine.scheduled.trigger_minute_rules"],
+	},
+	"daily": [
+		"slack_bridge.engine.scheduled.trigger_daily_rules",
+	],
+	"hourly": [
+		"slack_bridge.engine.users.refresh_stale_workspaces",
+	],
+}
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+# Frappe's log-clearing job prunes these automatically.
+default_log_clearing_doctypes = {
+	"Slack Message Log": 90,
+	"Slack Interaction Log": 30,
+}
 
-# Scheduled Tasks
-# ---------------
+# Show Slack messages about a document on that document's timeline.
+additional_timeline_content = {
+	"*": ["slack_bridge.engine.timeline.get_timeline_content"],
+}
 
-# scheduler_events = {
-# 	"all": [
-# 		"slack_bridge.tasks.all"
-# 	],
-# 	"daily": [
-# 		"slack_bridge.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"slack_bridge.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"slack_bridge.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"slack_bridge.tasks.monthly"
-# 	],
-# }
-
-# Testing
-# -------
-
-# before_tests = "slack_bridge.install.before_tests"
-
-# Extend DocType Class
-# ------------------------------
-#
-# Specify custom mixins to extend the standard doctype controller.
-# extend_doctype_class = {
-# 	"Task": "slack_bridge.custom.task.CustomTaskMixin"
-# }
-
-# Overriding Methods
-# ------------------------------
-#
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "slack_bridge.event.get_events"
-# }
-#
-# each overriding function accepts a `data` argument;
-# generated from the base implementation of the doctype dashboard,
-# along with any modifications made in other Frappe apps
-# override_doctype_dashboards = {
-# 	"Task": "slack_bridge.task.get_dashboard_data"
-# }
-
-# exempt linked doctypes from being automatically cancelled
-#
-# auto_cancel_exempted_doctypes = ["Auto Repeat"]
-
-# Ignore links to specified DocTypes when deleting documents
-# -----------------------------------------------------------
-
-# ignore_links_on_delete = ["Communication", "ToDo"]
-
-# Request Events
-# ----------------
-# before_request = ["slack_bridge.utils.before_request"]
-# after_request = ["slack_bridge.utils.after_request"]
-
-# Job Events
-# ----------
-# before_job = ["slack_bridge.utils.before_job"]
-# after_job = ["slack_bridge.utils.after_job"]
-
-# User Data Protection
-# --------------------
-
-# user_data_fields = [
-# 	{
-# 		"doctype": "{doctype_1}",
-# 		"filter_by": "{filter_by}",
-# 		"redact_fields": ["{field_1}", "{field_2}"],
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_2}",
-# 		"filter_by": "{filter_by}",
-# 		"partial": 1,
-# 	},
-# 	{
-# 		"doctype": "{doctype_3}",
-# 		"strict": False,
-# 	},
-# 	{
-# 		"doctype": "{doctype_4}"
-# 	}
-# ]
-
-# Authentication and authorization
-# --------------------------------
-
-# auth_hooks = [
-# 	"slack_bridge.auth.validate"
-# ]
+# Slack messages should never block deletion of the document they reference.
+ignore_links_on_delete = ["Slack Message Log", "Slack Interaction Log"]
 
 # Automatically update python controller files with type annotations for this app.
-# export_python_type_annotations = True
-
-# default_log_clearing_doctypes = {
-# 	"Logging DocType Name": 30  # days to retain logs
-# }
-
-# Translation
-# ------------
-# List of apps whose translatable strings should be excluded from this app's translations.
-# ignore_translatable_strings_from = []
-
+export_python_type_annotations = True

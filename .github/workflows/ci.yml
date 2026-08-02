@@ -3,19 +3,30 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - develop
+      - version-15
+      - version-16
   pull_request:
+  workflow_dispatch:
 
 concurrency:
-  group: main-slack_bridge-${{ github.event.number }}
+  group: ci-slack_bridge-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   tests:
     runs-on: ubuntu-latest
+    name: Server (Frappe ${{ matrix.frappe-branch }})
+
     strategy:
       fail-fast: false
-    name: Server
+      matrix:
+        # The app ships one codebase for both supported Frappe majors.
+        include:
+          - frappe-branch: version-15
+            python-version: '3.11'
+          - frappe-branch: version-16
+            python-version: '3.12'
 
     services:
       redis-cache:
@@ -27,76 +38,58 @@ jobs:
         ports:
           - 11000:6379
       mariadb:
-        image: mariadb:11.8
+        image: mariadb:10.6
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
-        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+        options: --health-cmd="mariadb-admin ping" --health-interval=5s --health-timeout=2s --health-retries=10
 
     steps:
       - name: Clone
-        uses: actions/checkout@v6
-
-      - name: Find tests
-        run: |
-          echo "Finding tests"
-          grep -rn "def test" > /dev/null
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: ${{ matrix.python-version }}
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
           check-latest: true
 
       - name: Cache pip
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/*requirements.txt', '**/pyproject.toml', '**/setup.py', '**/setup.cfg') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-            ${{ runner.os }}-
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: 'echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT'
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          key: ${{ runner.os }}-pip-${{ matrix.frappe-branch }}-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-${{ matrix.frappe-branch }}-
 
       - name: Install MariaDB Client
         run: |
-          sudo apt update
-          sudo apt-get install mariadb-client
+          sudo apt-get update
+          sudo apt-get install -y mariadb-client
 
-      - name: Setup
+      - name: Setup bench
         run: |
           pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets --python "$(which python)" ~/frappe-bench
+          bench init --skip-redis-config-generation --skip-assets \
+            --frappe-branch ${{ matrix.frappe-branch }} \
+            --python "$(which python)" ~/frappe-bench
 
-      - name: Install
+      - name: Install app
         working-directory: /home/runner/frappe-bench
         run: |
           bench get-app slack_bridge $GITHUB_WORKSPACE
           bench setup requirements --dev
           bench new-site --db-root-password root --admin-password admin test_site
           bench --site test_site install-app slack_bridge
-          bench build
         env:
           CI: 'Yes'
 
-      - name: Run Tests
+      - name: Run tests
         working-directory: /home/runner/frappe-bench
         run: |
           bench --site test_site set-config allow_tests true

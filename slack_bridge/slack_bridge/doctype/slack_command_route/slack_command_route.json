@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:{command}-{subcommand}-{####}",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "command",
+  "subcommand",
+  "enabled",
+  "cb_main",
+  "workspace",
+  "route_type",
+  "help_text",
+  "sb_target",
+  "form",
+  "method",
+  "server_script",
+  "builtin",
+  "sb_guard",
+  "required_role",
+  "require_account_link"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "/erp",
+   "description": "Including the leading slash, e.g. /erp",
+   "fieldname": "command",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Command",
+   "reqd": 1
+  },
+  {
+   "description": "First word after the command. Leave empty to match anything unrouted.",
+   "fieldname": "subcommand",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Subcommand"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "default": "Open Form",
+   "fieldname": "route_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Does",
+   "options": "Open Form\nRun Method\nRun Server Script\nBuilt-in",
+   "reqd": 1
+  },
+  {
+   "description": "Shown in Slack's command hints and in help.",
+   "fieldname": "help_text",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "fieldname": "sb_target",
+   "fieldtype": "Section Break",
+   "label": "Target"
+  },
+  {
+   "depends_on": "eval:doc.route_type=='Open Form'",
+   "fieldname": "form",
+   "fieldtype": "Link",
+   "label": "Form",
+   "mandatory_depends_on": "eval:doc.route_type=='Open Form'",
+   "options": "Slack Form"
+  },
+  {
+   "depends_on": "eval:doc.route_type=='Run Method'",
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method Path",
+   "mandatory_depends_on": "eval:doc.route_type=='Run Method'"
+  },
+  {
+   "depends_on": "eval:doc.route_type=='Run Server Script'",
+   "fieldname": "server_script",
+   "fieldtype": "Link",
+   "label": "Server Script",
+   "mandatory_depends_on": "eval:doc.route_type=='Run Server Script'",
+   "options": "Server Script"
+  },
+  {
+   "depends_on": "eval:doc.route_type=='Built-in'",
+   "fieldname": "builtin",
+   "fieldtype": "Select",
+   "label": "Built-in",
+   "mandatory_depends_on": "eval:doc.route_type=='Built-in'",
+   "options": "\nsubscribe\nunsubscribe\nsubscriptions\nlink\nwhoami\nhelp"
+  },
+  {
+   "fieldname": "sb_guard",
+   "fieldtype": "Section Break",
+   "label": "Guards"
+  },
+  {
+   "fieldname": "required_role",
+   "fieldtype": "Link",
+   "label": "Required Role",
+   "options": "Role"
+  },
+  {
+   "default": "1",
+   "fieldname": "require_account_link",
+   "fieldtype": "Check",
+   "label": "Require a Linked Account"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Command Route",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "command,subcommand",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "command",
+ "track_changes": 1
+}

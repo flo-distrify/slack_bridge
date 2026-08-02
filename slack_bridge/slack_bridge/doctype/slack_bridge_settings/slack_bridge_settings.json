@@ -1,0 +1,131 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_general",
+  "enabled",
+  "default_workspace",
+  "cb_general",
+  "debug_logging",
+  "sb_delivery",
+  "max_delivery_attempts",
+  "retry_backoff_seconds",
+  "cb_delivery",
+  "messages_per_channel_per_minute",
+  "sb_retention",
+  "message_log_retention_days",
+  "cb_retention",
+  "interaction_log_retention_days"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_general",
+   "fieldtype": "Section Break",
+   "label": "General"
+  },
+  {
+   "default": "1",
+   "description": "Global kill switch. When off, no messages are sent and inbound requests are rejected.",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable Slack Bridge"
+  },
+  {
+   "fieldname": "default_workspace",
+   "fieldtype": "Link",
+   "label": "Default Workspace",
+   "options": "Slack Workspace"
+  },
+  {
+   "fieldname": "cb_general",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Log full Slack payloads to the Interaction Log. Enable only while troubleshooting.",
+   "fieldname": "debug_logging",
+   "fieldtype": "Check",
+   "label": "Verbose Logging"
+  },
+  {
+   "fieldname": "sb_delivery",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "default": "5",
+   "description": "After this many failed attempts a queued message is marked Dead.",
+   "fieldname": "max_delivery_attempts",
+   "fieldtype": "Int",
+   "label": "Max Delivery Attempts"
+  },
+  {
+   "default": "60",
+   "description": "Base for exponential backoff between delivery attempts.",
+   "fieldname": "retry_backoff_seconds",
+   "fieldtype": "Int",
+   "label": "Retry Backoff (seconds)"
+  },
+  {
+   "fieldname": "cb_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "50",
+   "description": "Slack allows roughly one message per second per channel.",
+   "fieldname": "messages_per_channel_per_minute",
+   "fieldtype": "Int",
+   "label": "Messages per Channel per Minute"
+  },
+  {
+   "fieldname": "sb_retention",
+   "fieldtype": "Section Break",
+   "label": "Log Retention"
+  },
+  {
+   "default": "90",
+   "fieldname": "message_log_retention_days",
+   "fieldtype": "Int",
+   "label": "Message Log Retention (days)"
+  },
+  {
+   "fieldname": "cb_retention",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "30",
+   "fieldname": "interaction_log_retention_days",
+   "fieldtype": "Int",
+   "label": "Interaction Log Retention (days)"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Bridge Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,205 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:title",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "title",
+  "enabled",
+  "cb_main",
+  "document_type",
+  "action_type",
+  "sb_config",
+  "workflow_action",
+  "field_to_set",
+  "value_to_set",
+  "submit_after_update",
+  "server_script",
+  "method",
+  "sb_guard",
+  "required_role",
+  "confirm",
+  "confirm_text",
+  "cb_guard",
+  "collect_input_form",
+  "sb_result",
+  "update_original_message",
+  "success_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "default": "Workflow Action",
+   "fieldname": "action_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Action Type",
+   "options": "Workflow Action\nSet Field Value\nRun Server Script\nRun Method",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_config",
+   "fieldtype": "Section Break",
+   "label": "Configuration"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Workflow Action'",
+   "description": "Transition name from the document's workflow, e.g. Approve.",
+   "fieldname": "workflow_action",
+   "fieldtype": "Data",
+   "label": "Workflow Action",
+   "mandatory_depends_on": "eval:doc.action_type=='Workflow Action'"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Set Field Value'",
+   "fieldname": "field_to_set",
+   "fieldtype": "Data",
+   "label": "Field",
+   "mandatory_depends_on": "eval:doc.action_type=='Set Field Value'"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Set Field Value'",
+   "description": "Jinja. Available: doc, slack_user, input.",
+   "fieldname": "value_to_set",
+   "fieldtype": "Small Text",
+   "label": "Value"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Set Field Value'",
+   "fieldname": "submit_after_update",
+   "fieldtype": "Check",
+   "label": "Submit Document After Update"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Run Server Script'",
+   "fieldname": "server_script",
+   "fieldtype": "Link",
+   "label": "Server Script",
+   "mandatory_depends_on": "eval:doc.action_type=='Run Server Script'",
+   "options": "Server Script"
+  },
+  {
+   "depends_on": "eval:doc.action_type=='Run Method'",
+   "description": "Dotted path to a whitelisted method. Receives doc and slack context.",
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method Path",
+   "mandatory_depends_on": "eval:doc.action_type=='Run Method'"
+  },
+  {
+   "fieldname": "sb_guard",
+   "fieldtype": "Section Break",
+   "label": "Guards"
+  },
+  {
+   "description": "Optional extra gate. Frappe document permissions always apply.",
+   "fieldname": "required_role",
+   "fieldtype": "Link",
+   "label": "Required Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "confirm",
+   "fieldtype": "Check",
+   "label": "Ask for Confirmation"
+  },
+  {
+   "depends_on": "eval:doc.confirm",
+   "fieldname": "confirm_text",
+   "fieldtype": "Small Text",
+   "label": "Confirmation Text"
+  },
+  {
+   "fieldname": "cb_guard",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Opens this form as a modal before running, e.g. to capture a rejection reason.",
+   "fieldname": "collect_input_form",
+   "fieldtype": "Link",
+   "label": "Collect Input First",
+   "options": "Slack Form"
+  },
+  {
+   "fieldname": "sb_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "default": "1",
+   "description": "Replaces the buttons with an audit line naming who acted.",
+   "fieldname": "update_original_message",
+   "fieldtype": "Check",
+   "label": "Update Original Message"
+  },
+  {
+   "description": "Jinja. Default: <action> by <user>.",
+   "fieldname": "success_message",
+   "fieldtype": "Small Text",
+   "label": "Success Message"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Action",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

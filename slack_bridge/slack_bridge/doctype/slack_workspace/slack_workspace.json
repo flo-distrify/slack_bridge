@@ -1,0 +1,206 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:workspace_name",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_conn",
+  "workspace_name",
+  "enabled",
+  "cb_conn",
+  "connection_status",
+  "last_connection_check",
+  "sb_creds",
+  "bot_token",
+  "signing_secret",
+  "cb_creds",
+  "team_id",
+  "team_name",
+  "bot_user_id",
+  "app_id",
+  "sb_app",
+  "slack_app_name",
+  "bot_display_name",
+  "cb_app",
+  "slack_app_description",
+  "sb_setup",
+  "setup_help",
+  "endpoint_token",
+  "app_manifest",
+  "request_urls"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_conn",
+   "fieldtype": "Section Break",
+   "label": "Connection"
+  },
+  {
+   "fieldname": "workspace_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Workspace Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_conn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "connection_status",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Connection Status",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_connection_check",
+   "fieldtype": "Datetime",
+   "label": "Last Checked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_creds",
+   "fieldtype": "Section Break",
+   "label": "Credentials"
+  },
+  {
+   "description": "Starts with xoxb-. Slack app \u2192 OAuth & Permissions.",
+   "fieldname": "bot_token",
+   "fieldtype": "Password",
+   "label": "Bot User OAuth Token"
+  },
+  {
+   "description": "Slack app \u2192 Basic Information \u2192 App Credentials.",
+   "fieldname": "signing_secret",
+   "fieldtype": "Password",
+   "label": "Signing Secret"
+  },
+  {
+   "fieldname": "cb_creds",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team_id",
+   "fieldtype": "Data",
+   "label": "Team ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "team_name",
+   "fieldtype": "Data",
+   "label": "Team Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bot_user_id",
+   "fieldtype": "Data",
+   "label": "Bot User ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "app_id",
+   "fieldtype": "Data",
+   "label": "App ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "sb_app",
+   "fieldtype": "Section Break",
+   "label": "Slack App Identity"
+  },
+  {
+   "default": "ERP Bridge",
+   "fieldname": "slack_app_name",
+   "fieldtype": "Data",
+   "label": "Slack App Name"
+  },
+  {
+   "default": "ERP Bridge",
+   "fieldname": "bot_display_name",
+   "fieldtype": "Data",
+   "label": "Bot Display Name"
+  },
+  {
+   "fieldname": "cb_app",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Connects Slack with your Frappe/ERPNext site",
+   "fieldname": "slack_app_description",
+   "fieldtype": "Small Text",
+   "label": "Slack App Description"
+  },
+  {
+   "fieldname": "sb_setup",
+   "fieldtype": "Section Break",
+   "label": "Setup"
+  },
+  {
+   "fieldname": "setup_help",
+   "fieldtype": "HTML",
+   "options": "<p><b>How to connect</b></p><ol><li>Copy the manifest below.</li><li>Go to <a href='https://api.slack.com/apps' target='_blank'>api.slack.com/apps</a> \u2192 <b>Create New App</b> \u2192 <b>From a manifest</b>, pick your workspace and paste it.</li><li>Install the app to your workspace, then copy the <b>Bot User OAuth Token</b> and <b>Signing Secret</b> into the fields above and save.</li><li>Click <b>Test Connection</b>, then <b>Sync Users &amp; Channels</b>.</li></ol>"
+  },
+  {
+   "description": "Secret path token embedded in the Slack Request URLs for this workspace.",
+   "fieldname": "endpoint_token",
+   "fieldtype": "Data",
+   "label": "Endpoint Token",
+   "no_copy": 1,
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "app_manifest",
+   "fieldtype": "Code",
+   "label": "App Manifest (JSON)",
+   "options": "JSON",
+   "read_only": 1
+  },
+  {
+   "fieldname": "request_urls",
+   "fieldtype": "HTML",
+   "label": "Request URLs"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Workspace",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "team_name,team_id",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "workspace_name",
+ "track_changes": 1
+}

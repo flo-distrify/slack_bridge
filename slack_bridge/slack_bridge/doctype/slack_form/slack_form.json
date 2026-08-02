@@ -1,0 +1,153 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:title",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "title",
+  "enabled",
+  "cb_main",
+  "document_type",
+  "mode",
+  "sb_look",
+  "modal_title",
+  "cb_look",
+  "submit_label",
+  "sb_fields",
+  "fields",
+  "sb_after",
+  "submit_action",
+  "after_submit_message",
+  "post_to_channel"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "default": "Create",
+   "fieldname": "mode",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Mode",
+   "options": "Create\nUpdate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_look",
+   "fieldtype": "Section Break",
+   "label": "Appearance"
+  },
+  {
+   "description": "Defaults to the form title. Max 24 characters.",
+   "fieldname": "modal_title",
+   "fieldtype": "Data",
+   "label": "Modal Title"
+  },
+  {
+   "fieldname": "cb_look",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Submit",
+   "fieldname": "submit_label",
+   "fieldtype": "Data",
+   "label": "Submit Button Label"
+  },
+  {
+   "fieldname": "sb_fields",
+   "fieldtype": "Section Break",
+   "label": "Fields"
+  },
+  {
+   "fieldname": "fields",
+   "fieldtype": "Table",
+   "label": "Fields",
+   "options": "Slack Form Field",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_after",
+   "fieldtype": "Section Break",
+   "label": "After Submit"
+  },
+  {
+   "default": "Save",
+   "fieldname": "submit_action",
+   "fieldtype": "Select",
+   "label": "On Submit",
+   "options": "Save\nSave and Submit"
+  },
+  {
+   "description": "Jinja, sent privately to the user. Available: doc, doc_url.",
+   "fieldname": "after_submit_message",
+   "fieldtype": "Small Text",
+   "label": "Confirmation Message"
+  },
+  {
+   "fieldname": "post_to_channel",
+   "fieldtype": "Check",
+   "label": "Announce in the Originating Channel"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Form",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}

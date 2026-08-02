@@ -4,16 +4,26 @@ authors = [
     { name = "Automates UG", email = "operations@distrify.io"}
 ]
 description = "Bidirectional Slack connector for Frappe: config-driven notifications, approvals, commands, modals and unfurls"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 readme = "README.md"
+license = { file = "license.txt" }
 dynamic = ["version"]
-dependencies = [
-    # "frappe~=16.0.0" # Installed and managed by bench.
-]
+# No third-party dependencies on purpose: the Slack Web API is plain JSON over HTTPS,
+# and request signing is stdlib hmac. Keeps installs frictionless on Frappe Cloud.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/automates-ug/slack_bridge"
+Documentation = "https://github.com/automates-ug/slack_bridge#readme"
+Issues = "https://github.com/automates-ug/slack_bridge/issues"
 
 [build-system]
 requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
+
+# Frappe Cloud validates this on install and on bench update.
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<17.0.0-dev"
 
 # These dependencies are only installed when developer mode is enabled
 [tool.bench.dev-dependencies]
@@ -25,7 +35,7 @@ packages = []
 
 [tool.ruff]
 line-length = 110
-target-version = "py314"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [

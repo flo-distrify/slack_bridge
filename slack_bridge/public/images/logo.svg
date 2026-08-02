@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Slack Bridge">
+  <rect width="256" height="256" rx="56" fill="#1F3B57"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round">
+    <path d="M56 156c0-30 30-52 72-52s72 22 72 52"/>
+    <path d="M56 156v28M128 132v52M200 156v28"/>
+  </g>
+  <g fill="#4A9DD9">
+    <circle cx="84" cy="88" r="16"/>
+    <circle cx="172" cy="88" r="16"/>
+  </g>
+</svg>

@@ -1,0 +1,272 @@
+{
+ "actions": [
+  {
+   "action": "slack_bridge.api.rule.send_test_message_action",
+   "action_type": "Server Action",
+   "label": "Send Test Message"
+  },
+  {
+   "action": "slack_bridge.api.rule.preview_action",
+   "action_type": "Server Action",
+   "label": "Preview Message"
+  }
+ ],
+ "allow_rename": 0,
+ "autoname": "field:title",
+ "creation": "2026-08-02 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "title",
+  "enabled",
+  "workspace",
+  "cb_main",
+  "document_type",
+  "event",
+  "value_changed",
+  "date_field",
+  "days_in_advance",
+  "method",
+  "sb_condition",
+  "condition",
+  "sb_message",
+  "message_mode",
+  "subject",
+  "message",
+  "blocks_template",
+  "attach_document_link",
+  "sb_recipients",
+  "recipients",
+  "sb_buttons",
+  "buttons",
+  "sb_delivery",
+  "thread_mode",
+  "cb_delivery",
+  "priority",
+  "sb_help",
+  "rule_help"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "in_standard_filter": 1,
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "document_type",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Document Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "default": "New Document",
+   "description": "Value Change fires when a specific field changes. Date-based events are evaluated by the scheduler. Custom only fires when triggered from code.",
+   "fieldname": "event",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Send On",
+   "options": "New Document\nSave\nSubmit\nCancel\nDelete\nValue Change\nDays Before\nDays After\nMinutes Before\nMinutes After\nMethod\nCustom",
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.event=='Value Change'",
+   "fieldname": "value_changed",
+   "fieldtype": "Data",
+   "label": "Field to Watch",
+   "mandatory_depends_on": "eval:doc.event=='Value Change'"
+  },
+  {
+   "depends_on": "eval:['Days Before','Days After','Minutes Before','Minutes After'].includes(doc.event)",
+   "fieldname": "date_field",
+   "fieldtype": "Data",
+   "label": "Date Field",
+   "mandatory_depends_on": "eval:['Days Before','Days After','Minutes Before','Minutes After'].includes(doc.event)"
+  },
+  {
+   "default": "0",
+   "depends_on": "eval:['Days Before','Days After','Minutes Before','Minutes After'].includes(doc.event)",
+   "fieldname": "days_in_advance",
+   "fieldtype": "Int",
+   "label": "Days / Minutes Offset"
+  },
+  {
+   "depends_on": "eval:doc.event=='Method'",
+   "description": "Fires when this controller method runs on the document.",
+   "fieldname": "method",
+   "fieldtype": "Data",
+   "label": "Method Name",
+   "mandatory_depends_on": "eval:doc.event=='Method'"
+  },
+  {
+   "fieldname": "sb_condition",
+   "fieldtype": "Section Break",
+   "label": "Condition"
+  },
+  {
+   "description": "Optional Python expression. Available: doc, frappe (safe subset), nowdate. Example: doc.grand_total > 10000",
+   "fieldname": "condition",
+   "fieldtype": "Code",
+   "label": "Condition",
+   "options": "PythonExpression"
+  },
+  {
+   "fieldname": "sb_message",
+   "fieldtype": "Section Break",
+   "label": "Message"
+  },
+  {
+   "default": "Simple",
+   "description": "Simple renders one Jinja-templated message. Block Kit gives full control.",
+   "fieldname": "message_mode",
+   "fieldtype": "Select",
+   "label": "Message Mode",
+   "options": "Simple\nBlock Kit"
+  },
+  {
+   "depends_on": "eval:doc.message_mode=='Simple'",
+   "description": "Jinja. Rendered as a bold header line. Example: New Order {{ doc.name }}",
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Headline"
+  },
+  {
+   "depends_on": "eval:doc.message_mode=='Simple'",
+   "description": "Jinja + Slack mrkdwn. Available: doc, frappe (safe subset), nowdate, doc_url.",
+   "fieldname": "message",
+   "fieldtype": "Code",
+   "label": "Message",
+   "options": "Jinja"
+  },
+  {
+   "depends_on": "eval:doc.message_mode=='Block Kit'",
+   "description": "Jinja that must render to a Block Kit JSON array.",
+   "fieldname": "blocks_template",
+   "fieldtype": "Code",
+   "label": "Blocks Template",
+   "mandatory_depends_on": "eval:doc.message_mode=='Block Kit'",
+   "options": "Jinja"
+  },
+  {
+   "default": "1",
+   "depends_on": "eval:doc.message_mode=='Simple'",
+   "fieldname": "attach_document_link",
+   "fieldtype": "Check",
+   "label": "Add Link to Document"
+  },
+  {
+   "fieldname": "sb_recipients",
+   "fieldtype": "Section Break",
+   "label": "Recipients"
+  },
+  {
+   "fieldname": "recipients",
+   "fieldtype": "Table",
+   "label": "Recipients",
+   "options": "Slack Notification Recipient",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_buttons",
+   "fieldtype": "Section Break",
+   "label": "Buttons"
+  },
+  {
+   "fieldname": "buttons",
+   "fieldtype": "Table",
+   "label": "Buttons",
+   "options": "Slack Message Button"
+  },
+  {
+   "fieldname": "sb_delivery",
+   "fieldtype": "Section Break",
+   "label": "Delivery"
+  },
+  {
+   "default": "New Message",
+   "description": "Thread/Update keep all events for one document together in Slack.",
+   "fieldname": "thread_mode",
+   "fieldtype": "Select",
+   "label": "Threading",
+   "options": "New Message\nThread Under First Message\nUpdate Previous Message"
+  },
+  {
+   "fieldname": "cb_delivery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "Higher priority rules are delivered first.",
+   "fieldname": "priority",
+   "fieldtype": "Int",
+   "label": "Priority"
+  },
+  {
+   "fieldname": "sb_help",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "rule_help",
+   "fieldtype": "HTML",
+   "options": "<p class='text-muted small'>Conditions and templates are evaluated in Frappe's sandbox (the same one used by core Notifications). Test a rule with <b>Send Test Message</b>.</p>"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-02 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Notification Rule",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}
