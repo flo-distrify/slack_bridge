@@ -5,25 +5,38 @@ import frappe
 
 from slack_bridge.engine.rules import clear_cache
 
+DEFAULTS = {
+	"enabled": 1,
+	"max_delivery_attempts": 5,
+	"retry_backoff_seconds": 60,
+	"messages_per_channel_per_minute": 50,
+	"message_log_retention_days": 90,
+	"interaction_log_retention_days": 30,
+}
+
 
 def after_install():
-	create_settings()
+	# Uninstalling drops the doctypes but can leave the Single's row behind, so a
+	# reinstall must reassert the defaults — otherwise the app comes back disabled
+	# and silently sends nothing.
+	apply_defaults(force=True)
 
 
 def after_migrate():
-	create_settings()
-	# Rule definitions may have changed on disk (fixtures, updates).
+	# Only fill in what was never set: an administrator who turned the app off
+	# must stay in control of that.
+	apply_defaults(force=False)
+	# Rule definitions may have changed on disk.
 	clear_cache()
 
 
-def create_settings():
-	"""Materialise the Single so its defaults are readable before anyone opens it."""
-	if not frappe.db.exists("Slack Bridge Settings", "Slack Bridge Settings"):
-		settings = frappe.new_doc("Slack Bridge Settings")
-		settings.enabled = 1
-		settings.max_delivery_attempts = 5
-		settings.retry_backoff_seconds = 60
-		settings.message_log_retention_days = 90
-		settings.interaction_log_retention_days = 30
-		settings.flags.ignore_permissions = True
-		settings.save()
+def apply_defaults(force: bool = False):
+	settings = frappe.get_single("Slack Bridge Settings")
+
+	for fieldname, value in DEFAULTS.items():
+		current = settings.get(fieldname)
+		if force or current in (None, ""):
+			settings.set(fieldname, value)
+
+	settings.flags.ignore_permissions = True
+	settings.save()
