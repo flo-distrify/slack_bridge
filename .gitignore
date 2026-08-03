@@ -54,5 +54,5 @@ jspm_packages/
 # Aider AI Chat
 .aider*
 
-# Local setup helper, not part of the app
-slack_bridge/sbsetup.py
+# Local setup/inspection helpers, not part of the app
+slack_bridge/sb*.py
