@@ -358,3 +358,29 @@ class TestDispatch(SlackBridgeTestCase):
 			run_rule(rule.name, "ToDo", "does-not-exist", "after_insert")
 
 		self.assertFalse(frappe.db.exists("Slack Message Log", {"rule": rule.name}))
+
+
+class TestTemplateContext(SlackBridgeTestCase):
+	def test_json_is_available_to_templates(self):
+		# Notifying on log/event doctypes means reading a JSON payload field; without
+		# a parser in the context those templates cannot be written at all.
+		doc = make_todo()
+		doc.description = '{"customer": "ACME", "rows": 42}'
+
+		rendered = render('{{ json.loads(doc.description)["customer"] }}', doc)
+		self.assertEqual(rendered, "ACME")
+
+	def test_frappe_utils_parse_json_also_works(self):
+		doc = make_todo()
+		doc.description = '{"rows": 42}'
+
+		self.assertEqual(render("{{ frappe.utils.parse_json(doc.description).rows }}", doc), "42")
+
+	def test_as_json_is_available(self):
+		doc = make_todo()
+		self.assertIn(doc.name, render("{{ as_json({'n': doc.name}) }}", doc))
+
+	def test_context_still_sandboxed(self):
+		doc = make_todo()
+		with self.assertRaises(Exception):
+			render("{{ json.__class__.__mro__ }}", doc)

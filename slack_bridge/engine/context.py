@@ -23,11 +23,18 @@ def get_doc_url(doc) -> str:
 
 
 def get_context(doc, extra: dict | None = None) -> dict:
+	safe_globals = get_safe_globals()
+
 	context = {
 		"doc": doc,
 		"nowdate": nowdate,
 		"nowtime": nowtime,
-		"frappe": get_safe_globals().get("frappe"),
+		"frappe": safe_globals.get("frappe"),
+		# `json` sits at the top level of Frappe's safe globals, not under `frappe`.
+		# Without it a template cannot read a JSON-valued field at all — common when
+		# notifying on log or event doctypes that carry a payload blob.
+		"json": safe_globals.get("json"),
+		"as_json": safe_globals.get("as_json"),
 		"doc_url": get_doc_url(doc),
 	}
 
