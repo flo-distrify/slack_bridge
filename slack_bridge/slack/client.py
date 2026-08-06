@@ -196,6 +196,33 @@ class SlackClient:
 	def publish_home(self, user_id: str, view: dict) -> dict:
 		return self.call("views.publish", user_id=user_id, view=view)
 
+	# ----------------------------------------------------------- files
+
+	def file_info(self, file_id: str) -> dict:
+		return self.call("files.info", file=file_id, use_json=False)
+
+	def fetch_file(self, url: str, timeout: int = 10, max_bytes: int = 2_000_000) -> str:
+		"""Download a Slack-hosted file (e.g. a voice clip's VTT transcript) as text.
+
+		url_private requires the bot token as a Bearer header. Slack answers failed
+		auth with an HTML login page instead of a 4xx, so an HTML body is an error.
+		"""
+		response = requests.get(
+			url,
+			headers={"Authorization": f"Bearer {self.token}"},
+			timeout=timeout,
+			allow_redirects=True,
+		)
+
+		if response.status_code != 200:
+			raise SlackError(_("Slack file download failed with HTTP {0}").format(response.status_code))
+		if len(response.content) > max_bytes:
+			raise SlackError(_("Slack file is larger than {0} bytes").format(max_bytes))
+		if response.text.lstrip().startswith("<"):
+			raise SlackError(_("Slack served a login page instead of the file — check the files:read scope."))
+
+		return response.text
+
 	# --------------------------------------------------- users/channels
 
 	def auth_test(self) -> dict:

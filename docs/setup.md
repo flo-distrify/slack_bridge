@@ -177,6 +177,36 @@ must register the command itself. New subcommands need no Slack-side change.
 
 ---
 
+## Logging calls from messages
+
+A **Slack Communication Shortcut** adds a *message shortcut* to Slack's context menu
+(the "three dots" on any message). Invoking it opens a modal prefilled with the message
+text — or, for a Slack voice clip, with Slack's own transcript — where the user picks
+the target document in a type-ahead search and submits. The result is a
+**Communication** (medium of your choice, e.g. Phone) on that document's timeline,
+created as the linked Frappe user.
+
+To enable it:
+
+1. Create a **Slack Communication Shortcut**: label (max 24 chars), workspace, medium,
+   and one **party doctype** row per searchable target — e.g. `Lead` with search fields
+   `lead_name, company_name`, and `Customer` with `customer_name, name`.
+2. Re-copy the generated manifest from the Slack Workspace document into your Slack
+   app's configuration (it now contains the shortcut and the `files:read` scope).
+3. **Reinstall the app to the workspace** — a scope change always requires a reinstall.
+
+Notes:
+
+- Searching and logging both run as the mapped Frappe user; logging requires **write**
+  permission on the target document.
+- Voice-clip transcripts are Slack's native transcription. If it is still processing
+  when the modal opens, the user is told to type notes or retry in a minute; an empty
+  notes field is refetched once at submit time.
+- Everything is deduplicated: re-invoking the shortcut later is allowed, Slack's
+  redeliveries and double submissions are not.
+
+---
+
 ## Link previews
 
 Create a **Slack Unfurl Rule** for a doctype and list the fields to show. Pasting a link
