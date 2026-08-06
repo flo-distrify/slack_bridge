@@ -30,6 +30,14 @@ def handle():
 		handle_block_actions(workspace, payload)
 	elif kind == "view_submission":
 		handle_view_submission(workspace, payload)
+	elif kind == "message_action":
+		from slack_bridge.api.comm_log import handle_message_action
+
+		handle_message_action(workspace, payload)
+	elif kind == "block_suggestion":
+		from slack_bridge.api.comm_log import handle_block_suggestion
+
+		handle_block_suggestion(workspace, payload)
 	elif kind == "view_closed":
 		base.respond()
 	else:
@@ -187,14 +195,26 @@ def handle_view_submission(workspace, payload: dict) -> None:
 	# Submissions run inline: Slack needs the validation verdict within three seconds,
 	# and reporting field errors is only possible in this response.
 	try:
-		result = submit_form(
-			workspace=workspace,
-			view=view,
-			metadata=metadata,
-			user=mapping.user,
-			slack_user_id=slack_user_id,
-			log_name=log_name,
-		)
+		if view.get("callback_id") == "sb_comm_log":
+			from slack_bridge.api.comm_log import submit_comm_log
+
+			result = submit_comm_log(
+				workspace=workspace,
+				view=view,
+				metadata=metadata,
+				user=mapping.user,
+				slack_user_id=slack_user_id,
+				log_name=log_name,
+			)
+		else:
+			result = submit_form(
+				workspace=workspace,
+				view=view,
+				metadata=metadata,
+				user=mapping.user,
+				slack_user_id=slack_user_id,
+				log_name=log_name,
+			)
 	except Exception as e:
 		frappe.db.rollback()
 		frappe.log_error(title="Slack Bridge: form submission failed", message=frappe.get_traceback())

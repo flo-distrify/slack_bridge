@@ -1,0 +1,194 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "format:{shortcut_label}-{####}",
+ "creation": "2026-08-06 12:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "shortcut_label",
+  "shortcut_description",
+  "enabled",
+  "cb_main",
+  "workspace",
+  "callback_id",
+  "sb_comm",
+  "communication_medium",
+  "default_direction",
+  "default_subject",
+  "cb_comm",
+  "collect_phone_no",
+  "min_query_length",
+  "search_limit",
+  "sb_parties",
+  "party_doctypes",
+  "sb_guard",
+  "required_role",
+  "sb_after",
+  "confirmation_message"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Shown in Slack's message context menu. At most 24 characters.",
+   "fieldname": "shortcut_label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shortcut Label",
+   "reqd": 1
+  },
+  {
+   "description": "Shown under the label in Slack. At most 50 characters.",
+   "fieldname": "shortcut_description",
+   "fieldtype": "Data",
+   "label": "Shortcut Description"
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "default": "sb_log_comm",
+   "description": "Must match the callback_id in the Slack app manifest.",
+   "fieldname": "callback_id",
+   "fieldtype": "Data",
+   "label": "Callback ID",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "sb_comm",
+   "fieldtype": "Section Break",
+   "label": "Communication"
+  },
+  {
+   "default": "Phone",
+   "fieldname": "communication_medium",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Medium",
+   "options": "Phone\nMeeting\nChat\nSMS\nVisit",
+   "reqd": 1
+  },
+  {
+   "default": "Outbound",
+   "fieldname": "default_direction",
+   "fieldtype": "Select",
+   "label": "Default Direction",
+   "options": "Outbound\nInbound"
+  },
+  {
+   "default": "Phone call",
+   "description": "Used when the Slack message has no text to derive a subject from.",
+   "fieldname": "default_subject",
+   "fieldtype": "Data",
+   "label": "Default Subject"
+  },
+  {
+   "fieldname": "cb_comm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "collect_phone_no",
+   "fieldtype": "Check",
+   "label": "Ask for a Phone Number"
+  },
+  {
+   "default": "2",
+   "description": "Characters the user must type before the picker searches.",
+   "fieldname": "min_query_length",
+   "fieldtype": "Int",
+   "label": "Minimum Query Length"
+  },
+  {
+   "default": "8",
+   "description": "Results per party doctype, at most 15.",
+   "fieldname": "search_limit",
+   "fieldtype": "Int",
+   "label": "Search Limit"
+  },
+  {
+   "fieldname": "sb_parties",
+   "fieldtype": "Section Break",
+   "label": "Log Against"
+  },
+  {
+   "fieldname": "party_doctypes",
+   "fieldtype": "Table",
+   "label": "Party Doctypes",
+   "options": "Slack Party Doctype",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_guard",
+   "fieldtype": "Section Break",
+   "label": "Guards"
+  },
+  {
+   "fieldname": "required_role",
+   "fieldtype": "Link",
+   "label": "Required Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "sb_after",
+   "fieldtype": "Section Break",
+   "label": "After Logging"
+  },
+  {
+   "description": "Jinja. Available: doc (the document the call was logged against), doc_url.",
+   "fieldname": "confirmation_message",
+   "fieldtype": "Small Text",
+   "label": "Confirmation Message"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-06 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Communication Shortcut",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "shortcut_label,callback_id",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "shortcut_label",
+ "track_changes": 1
+}
