@@ -21,6 +21,7 @@ BOT_SCOPES = [
 	"chat:write",
 	"chat:write.public",
 	"commands",
+	"files:read",
 	"groups:read",
 	"im:read",
 	"im:write",
@@ -87,6 +88,10 @@ def build_manifest(workspace) -> dict:
 	if commands:
 		manifest["features"]["slash_commands"] = commands
 
+	shortcuts = get_message_shortcuts(workspace.name)
+	if shortcuts:
+		manifest["features"]["shortcuts"] = shortcuts
+
 	return manifest
 
 
@@ -130,6 +135,32 @@ def get_slash_commands(token: str) -> list[dict]:
 		)
 
 	return commands
+
+
+def get_message_shortcuts(workspace_name: str) -> list[dict]:
+	"""One manifest entry per enabled Slack Communication Shortcut of this workspace.
+
+	Shortcuts arrive on the interactivity Request URL, so they carry no URL of their own.
+	"""
+	if not frappe.db.table_exists("Slack Communication Shortcut"):
+		return []
+
+	rows = frappe.get_all(
+		"Slack Communication Shortcut",
+		filters={"enabled": 1, "workspace": workspace_name},
+		fields=["shortcut_label", "shortcut_description", "callback_id"],
+		order_by="creation asc",
+	)
+
+	return [
+		{
+			"name": row.shortcut_label[:24],
+			"type": "message",
+			"callback_id": row.callback_id[:255],
+			"description": (row.shortcut_description or "Log this message to your ERP")[:50],
+		}
+		for row in rows
+	]
 
 
 def manifest_json(workspace) -> str:

@@ -31,6 +31,12 @@ account linking, help, and GitHub-style channel subscriptions (`/erp subscribe <
 **Link previews.** Paste a document URL into Slack and it unfurls into a card with the
 fields you chose — gated on the sharer's read permission, so nothing leaks into a channel.
 
+**Log calls from messages.** A *Slack Communication Shortcut* adds a message shortcut
+("Log as Phone Call") that turns any Slack message — typed notes or a **voice clip, using
+Slack's own transcript** — into a timeline Communication on a document of your choosing.
+A type-ahead picker searches the doctypes you configure (Leads, Customers, …), permission-
+aware as the linked user.
+
 **Reliability.** Every outbound message is a durable outbox row: per-channel pacing to
 respect Slack's one-message-per-second limit, exponential backoff, `Retry-After`
 handling, permanent-error detection, and a full delivery log on the document's timeline.
