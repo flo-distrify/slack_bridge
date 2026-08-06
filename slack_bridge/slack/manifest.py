@@ -78,6 +78,9 @@ def build_manifest(workspace) -> dict:
 			"interactivity": {
 				"is_enabled": True,
 				"request_url": endpoint_url("interactive.handle", token),
+				# external_select option lookups (block_suggestion) are delivered to a
+				# separate Options Load URL — without it, pickers silently stay empty.
+				"message_menu_options_url": endpoint_url("interactive.handle", token),
 			},
 			"org_deploy_enabled": False,
 			"socket_mode_enabled": False,

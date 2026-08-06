@@ -140,6 +140,8 @@ class TestManifestShortcuts(CommLogTestCase):
 		manifest = build_manifest(self.workspace)
 
 		self.assertIn("files:read", BOT_SCOPES)
+		# Without the Options Load URL, external_select pickers silently stay empty.
+		self.assertTrue(manifest["settings"]["interactivity"].get("message_menu_options_url"))
 		shortcuts = manifest["features"].get("shortcuts") or []
 		self.assertTrue(any(s["callback_id"] == CALLBACK_ID for s in shortcuts))
 		self.assertTrue(all(s["type"] == "message" for s in shortcuts))
