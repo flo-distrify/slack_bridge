@@ -370,11 +370,13 @@ class TestTemplateContext(SlackBridgeTestCase):
 		rendered = render('{{ json.loads(doc.description)["customer"] }}', doc)
 		self.assertEqual(rendered, "ACME")
 
-	def test_frappe_utils_parse_json_also_works(self):
+	def test_parse_json_helper_works(self):
+		# The app provides parse_json itself: frappe v16 has it in the template
+		# namespace, v15 does not, and templates must work identically on both.
 		doc = make_todo()
 		doc.description = '{"rows": 42}'
 
-		self.assertEqual(render("{{ frappe.utils.parse_json(doc.description).rows }}", doc), "42")
+		self.assertEqual(render("{{ parse_json(doc.description).rows }}", doc), "42")
 
 	def test_as_json_is_available(self):
 		doc = make_todo()
