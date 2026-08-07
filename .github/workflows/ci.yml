@@ -23,8 +23,9 @@ jobs:
       matrix:
         # The app ships one codebase for both supported Frappe majors.
         include:
+          # frappe version-16 pins requires-python to >=3.14,<3.15
           - frappe-branch: version-16
-            python-version: '3.12'
+            python-version: '3.14'
 
     services:
       redis-cache:
@@ -68,7 +69,8 @@ jobs:
       - name: Install MariaDB Client
         run: |
           sudo apt-get update
-          sudo apt-get install -y mariadb-client
+          # dev headers + pkg-config: mysqlclient has no Linux wheels and builds from source
+          sudo apt-get install -y mariadb-client libmariadb-dev pkg-config
 
       - name: Setup bench
         run: |
