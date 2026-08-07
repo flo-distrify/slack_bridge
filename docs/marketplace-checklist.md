@@ -8,10 +8,10 @@ Frappe Cloud marketplace guidelines, app authoring guidelines and app versioning
 | Requirement | Status |
 | --- | --- |
 | Open source licence (MIT or GPL-compatible) | Done — AGPL-3.0 in `license.txt` |
-| Hosted on GitHub, owned by the publisher account | **To do** — push to `github.com/flo-distrify/slack_bridge` |
+| Hosted on GitHub, owned by the publisher account | Done — `github.com/flo-distrify/slack_bridge` |
 | Unique app name on the marketplace | **To verify** before first submission |
 | `pyproject.toml` at repo root with `[tool.bench.frappe-dependencies]` | Done — `frappe = ">=15.0.0,<17.0.0-dev"` |
-| Branch per Frappe major (`version-15`, `version-16`) | **To do** at push time |
+| Branch per Frappe major (`version-15`, `version-16`) | Done — both branches live and release-synced via cherry-pick from `develop` |
 | Passing GitHub Actions CI | Done — `.github/workflows/ci.yml` runs the suite on v15 and v16 |
 | Semgrep clean against `frappe/semgrep-rules` | Workflow present (`linter.yml`); run before submitting |
 | Does not override framework auth routes | Done — extends only via hooks |
@@ -36,6 +36,26 @@ Frappe Cloud marketplace guidelines, app authoring guidelines and app versioning
 - Commission: none until the first $500, then 80/20 in the publisher's favour.
 - Frappe Cloud does **not** enforce plan-based feature gating. If plans differ by feature,
   the app must check its own subscription; otherwise keep one plan and avoid the problem.
+
+## Slack app scopes to justify in the listing
+
+Slack (and attentive reviewers) ask why each scope is requested. The manifest is
+generated per customer, so these apply to every install:
+
+| Scope | Why |
+| --- | --- |
+| `files:read` | Reads Slack's native transcript of voice clips for the comm-log shortcut |
+| `channels:join` | Lets the bot join public channels to place the synced-✅ reaction |
+| `reactions:write` | The synced-✅ marker on logged messages |
+| remaining scopes | Core messaging/commands/unfurls, unchanged since the first release |
+
+## Cleanup before submission
+
+- [ ] Genericise or exclude the local bench-execute helpers `sbsetup.py`, `sbrule.py`,
+      `sbinspect.py` — they hardcode the "Distrify" workspace name, `/erp` and an
+      internal test address. They never run as part of the app, but they are Distrify
+      residue in an otherwise tenant-neutral codebase (verified: shipped code touches
+      only framework doctypes; the single business doctype written is `Communication`).
 
 ## Notes that shaped the build
 
