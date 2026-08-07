@@ -199,6 +199,10 @@ class SlackClient:
 	def add_reaction(self, channel: str, timestamp: str, name: str) -> dict:
 		return self.call("reactions.add", channel=channel, timestamp=timestamp, name=name)
 
+	def join_channel(self, channel: str) -> dict:
+		"""Join a public channel (channels:join). Private channels need an /invite."""
+		return self.call("conversations.join", channel=channel)
+
 	# ----------------------------------------------------------- files
 
 	def file_info(self, file_id: str) -> dict:

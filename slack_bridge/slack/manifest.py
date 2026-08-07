@@ -17,6 +17,7 @@ import frappe
 
 BOT_SCOPES = [
 	"app_mentions:read",
+	"channels:join",
 	"channels:read",
 	"chat:write",
 	"chat:write.public",
