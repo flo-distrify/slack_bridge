@@ -25,9 +25,11 @@ jobs:
         include:
           - frappe-branch: version-15
             python-version: '3.11'
-          # frappe version-16 pins requires-python to >=3.14,<3.15
+            node-version: 20
+          # frappe version-16 pins requires-python >=3.14,<3.15 and node >=24
           - frappe-branch: version-16
             python-version: '3.14'
+            node-version: 24
 
     services:
       redis-cache:
@@ -58,7 +60,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           check-latest: true
 
       - name: Cache pip
