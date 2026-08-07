@@ -196,6 +196,9 @@ class SlackClient:
 	def publish_home(self, user_id: str, view: dict) -> dict:
 		return self.call("views.publish", user_id=user_id, view=view)
 
+	def add_reaction(self, channel: str, timestamp: str, name: str) -> dict:
+		return self.call("reactions.add", channel=channel, timestamp=timestamp, name=name)
+
 	# ----------------------------------------------------------- files
 
 	def file_info(self, file_id: str) -> dict:

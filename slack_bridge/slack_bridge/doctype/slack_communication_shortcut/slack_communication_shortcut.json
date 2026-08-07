@@ -27,7 +27,8 @@
   "sb_guard",
   "required_role",
   "sb_after",
-  "confirmation_message"
+  "confirmation_message",
+  "reaction_emoji"
  ],
  "fields": [
   {
@@ -160,6 +161,13 @@
    "fieldname": "confirmation_message",
    "fieldtype": "Small Text",
    "label": "Confirmation Message"
+  },
+  {
+   "default": "white_check_mark",
+   "description": "Emoji added to the source Slack message after logging (name without colons). Clear to disable.",
+   "fieldname": "reaction_emoji",
+   "fieldtype": "Data",
+   "label": "Synced Reaction"
   }
  ],
  "index_web_pages_for_search": 0,
