@@ -21,7 +21,7 @@ from frappe.utils import escape_html
 from slack_bridge.api import base
 from slack_bridge.engine.context import get_doc_url, render
 from slack_bridge.slack import blocks as bk
-from slack_bridge.slack.client import SlackClient
+from slack_bridge.slack.client import SlackClient, SlackError
 from slack_bridge.slack.client import respond as respond_url
 
 CALLBACK_ID = "sb_comm_log"
@@ -472,6 +472,7 @@ def submit_comm_log(workspace, view: dict, metadata: dict, user: str, slack_user
 
 	base.finish(log_name, "Processed", f"Communication {comm.name} on {ref_doctype} {docname}")
 	confirm_logged(workspace, config, ref, metadata, slack_user_id)
+	react_to_source(workspace, config, metadata)
 	return {"response_action": "clear"}
 
 
@@ -509,36 +510,62 @@ def demarkdown(text: str) -> str:
 	return "".join(out).replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
 
 
-BULLET_PREFIXES = ("• ", "- ", "* ")
+# Slack renders list depth through the marker itself: • level 0, ◦ level 1,
+# ▪ level 2+. Hyphen/asterisk cover hand-typed notes.
+BULLET_MARKERS = {"• ": 0, "- ": 0, "* ": 0, "◦ ": 1, "▪ ": 2}
 
 
 def notes_to_html(notes: str) -> str:
-	"""Escaped HTML for the Communication, with Slack-style bullets as real lists."""
+	"""Escaped HTML for the Communication, with Slack-style bullets as real
+	(nested) lists."""
 	if not notes:
 		return ""
 
 	parts: list[str] = []
-	bullets: list[str] = []
+	depth = 0
 
-	def flush_bullets():
-		if bullets:
-			parts.append("<ul>" + "".join(f"<li>{escape_html(b)}</li>" for b in bullets) + "</ul>")
-			bullets.clear()
+	def set_depth(target: int):
+		nonlocal depth
+		while depth > target:
+			parts.append("</ul>")
+			depth -= 1
+		while depth < target:
+			parts.append("<ul>")
+			depth += 1
 
 	for line in notes.splitlines():
 		stripped = line.strip()
-		prefix = next((p for p in BULLET_PREFIXES if stripped.startswith(p)), None)
+		marker = next((m for m in BULLET_MARKERS if stripped.startswith(m)), None)
 
-		if prefix:
-			bullets.append(stripped[len(prefix) :].strip())
+		if marker:
+			set_depth(BULLET_MARKERS[marker] + 1)
+			parts.append(f"<li>{escape_html(stripped[len(marker) :].strip())}</li>")
 		elif not stripped:
-			flush_bullets()
+			set_depth(0)
 		else:
-			flush_bullets()
+			set_depth(0)
 			parts.append(f"<div>{escape_html(stripped)}</div>")
 
-	flush_bullets()
+	set_depth(0)
 	return "".join(parts)
+
+
+def react_to_source(workspace, config, metadata: dict) -> None:
+	"""Mark the source Slack message as synced (default: a white_check_mark)."""
+	emoji = (config.get("reaction_emoji") or "").strip().strip(":")
+	channel = metadata.get("channel")
+	ts = metadata.get("message_ts")
+	if not (emoji and channel and ts):
+		return
+
+	try:
+		SlackClient(workspace).add_reaction(channel, ts, emoji)
+	except SlackError as e:
+		# A second log of the same message is fine; anything else is only cosmetic.
+		if e.code != "already_reacted":
+			frappe.log_error(title="Slack Bridge: reaction failed", message=frappe.get_traceback())
+	except Exception:
+		frappe.log_error(title="Slack Bridge: reaction failed", message=frappe.get_traceback())
 
 
 def confirm_logged(workspace, config, ref, metadata: dict, slack_user_id: str) -> None:
