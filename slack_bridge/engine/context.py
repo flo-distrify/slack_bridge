@@ -35,6 +35,9 @@ def get_context(doc, extra: dict | None = None) -> dict:
 		# notifying on log or event doctypes that carry a payload blob.
 		"json": safe_globals.get("json"),
 		"as_json": safe_globals.get("as_json"),
+		# frappe v16 exposes frappe.utils.parse_json to templates, v15 does not —
+		# providing it here gives both majors the same template vocabulary.
+		"parse_json": frappe.parse_json,
 		"doc_url": get_doc_url(doc),
 	}
 
