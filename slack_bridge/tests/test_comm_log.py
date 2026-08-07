@@ -304,7 +304,7 @@ class TestSubmission(CommLogTestCase):
 				"id": f"V{frappe.generate_hash(length=8)}",
 				"hash": frappe.generate_hash(length=10),
 				"callback_id": comm_log.CALLBACK_ID,
-				"private_metadata": json.dumps({"cs": shortcut.name, "channel": CHANNEL_ID}),
+				"private_metadata": json.dumps({"cs": shortcut.name, "channel": CHANNEL_ID, "message_ts": "1700000001.000100"}),
 				"blocks": [{"block_id": comm_log.BLOCK_PARTY}],
 				"state": {
 					"values": {
@@ -326,8 +326,11 @@ class TestSubmission(CommLogTestCase):
 		todo = make_todo("Submission target")
 		before = frappe.session.user
 
-		with fake_slack():
+		with fake_slack() as post:
 			self.post_payload(self.submission_payload(shortcut, todo))
+
+		reactions = [c for c in post.call_args_list if "reactions.add" in c.args[0]]
+		self.assertEqual(len(reactions), 1)
 
 		self.assertEqual(frappe.local.response.get("response_action"), "clear")
 		self.assertEqual(frappe.session.user, before)
@@ -427,6 +430,18 @@ class TestNotesFormatting(SlackBridgeTestCase):
 		self.assertEqual(
 			comm_log.demarkdown("siehe <https://example.com|Angebot> von <@U123>"),
 			"siehe Angebot (https://example.com) von @U123",
+		)
+
+	def test_nested_bullets_become_nested_lists(self):
+		html = comm_log.notes_to_html(
+			"Call mit Stephan\n• Generisches Plugin\n• Core Funktionen\n    ◦ Datenmodell\n    ◦ Konfiguration\n• One-Time Sync"
+		)
+		self.assertEqual(
+			html,
+			"<div>Call mit Stephan</div>"
+			"<ul><li>Generisches Plugin</li><li>Core Funktionen</li>"
+			"<ul><li>Datenmodell</li><li>Konfiguration</li></ul>"
+			"<li>One-Time Sync</li></ul>",
 		)
 
 	def test_bullets_become_a_list(self):
