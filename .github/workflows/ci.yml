@@ -75,11 +75,19 @@ jobs:
           sudo apt-get install -y mariadb-client libmariadb-dev pkg-config
 
       - name: Setup bench
+        # On failure the log tail is emitted as ::error:: annotations, which are
+        # readable through the public checks API — debuggable without repo admin.
         run: |
-          pip install frappe-bench
-          bench init --skip-redis-config-generation --skip-assets \
-            --frappe-branch ${{ matrix.frappe-branch }} \
-            --python "$(which python)" ~/frappe-bench
+          set -o pipefail
+          {
+            pip install frappe-bench
+            bench init --skip-redis-config-generation --skip-assets \
+              --frappe-branch ${{ matrix.frappe-branch }} \
+              --python "$(which python)" ~/frappe-bench
+          } 2>&1 | tee /tmp/setup.log || {
+            tail -n 12 /tmp/setup.log | while IFS= read -r line; do echo "::error::SETUP: ${line}"; done
+            exit 1
+          }
 
       - name: Install app
         working-directory: /home/runner/frappe-bench
@@ -94,7 +102,14 @@ jobs:
       - name: Run tests
         working-directory: /home/runner/frappe-bench
         run: |
-          bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app slack_bridge
+          set -o pipefail
+          {
+            bench --site test_site set-config allow_tests true
+            bench --site test_site run-tests --app slack_bridge
+          } 2>&1 | tee /tmp/tests.log || {
+            grep -E "FAIL|Error|assert" /tmp/tests.log | tail -n 12 | while IFS= read -r line; do echo "::error::TEST: ${line}"; done
+            tail -n 6 /tmp/tests.log | while IFS= read -r line; do echo "::error::TAIL: ${line}"; done
+            exit 1
+          }
         env:
           TYPE: server
