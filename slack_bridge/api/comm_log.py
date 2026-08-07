@@ -129,7 +129,7 @@ def extract_notes(workspace, payload: dict) -> tuple[str, str | None, str | None
 	submission can refetch a transcript that was still processing.
 	"""
 	message = payload.get("message") or {}
-	text = (message.get("text") or "").strip()
+	text = demarkdown((message.get("text") or "").strip())
 
 	audio = next(
 		(
@@ -479,10 +479,66 @@ def errors(block_id: str, message: str) -> dict:
 	return {"response_action": "errors", "errors": {block_id: message}}
 
 
+def demarkdown(text: str) -> str:
+	"""Undo Slack's mrkdwn transport encoding for plain-text use.
+
+	Slack escapes &, < and > in message text and wraps links as <url|label>.
+	Without this, the escaped entities get escaped AGAIN on the way into the
+	Communication ("->" arrives as "-&amp;gt;").
+	"""
+	if not text:
+		return ""
+
+	out = []
+	rest = text
+	while "<" in rest:
+		before, _bracket, tail = rest.partition("<")
+		out.append(before)
+		inner, closed, rest = tail.partition(">")
+		if not closed:
+			out.append("<" + inner)
+			break
+		# <url|label> → "label (url)"; <@U…>/<#C…|name> and bare <url> keep their body.
+		target, pipe, label = inner.partition("|")
+		if pipe and not target.startswith(("@", "#", "!")):
+			out.append(f"{label} ({target})")
+		else:
+			out.append(label if pipe else target)
+	out.append(rest)
+
+	return "".join(out).replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+
+
+BULLET_PREFIXES = ("• ", "- ", "* ")
+
+
 def notes_to_html(notes: str) -> str:
+	"""Escaped HTML for the Communication, with Slack-style bullets as real lists."""
 	if not notes:
 		return ""
-	return "<div>" + escape_html(notes).replace("\n", "<br>") + "</div>"
+
+	parts: list[str] = []
+	bullets: list[str] = []
+
+	def flush_bullets():
+		if bullets:
+			parts.append("<ul>" + "".join(f"<li>{escape_html(b)}</li>" for b in bullets) + "</ul>")
+			bullets.clear()
+
+	for line in notes.splitlines():
+		stripped = line.strip()
+		prefix = next((p for p in BULLET_PREFIXES if stripped.startswith(p)), None)
+
+		if prefix:
+			bullets.append(stripped[len(prefix) :].strip())
+		elif not stripped:
+			flush_bullets()
+		else:
+			flush_bullets()
+			parts.append(f"<div>{escape_html(stripped)}</div>")
+
+	flush_bullets()
+	return "".join(parts)
 
 
 def confirm_logged(workspace, config, ref, metadata: dict, slack_user_id: str) -> None:
