@@ -68,7 +68,8 @@ jobs:
       - name: Install MariaDB Client
         run: |
           sudo apt-get update
-          sudo apt-get install -y mariadb-client
+          # dev headers + pkg-config: mysqlclient has no Linux wheels and builds from source
+          sudo apt-get install -y mariadb-client libmariadb-dev pkg-config
 
       - name: Setup bench
         run: |
