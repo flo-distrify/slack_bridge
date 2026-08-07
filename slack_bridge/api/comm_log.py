@@ -558,11 +558,20 @@ def react_to_source(workspace, config, metadata: dict) -> None:
 	if not (emoji and channel and ts):
 		return
 
+	client = SlackClient(workspace)
 	try:
-		SlackClient(workspace).add_reaction(channel, ts, emoji)
+		client.add_reaction(channel, ts, emoji)
 	except SlackError as e:
-		# A second log of the same message is fine; anything else is only cosmetic.
-		if e.code != "already_reacted":
+		# chat:write.public lets the bot POST without joining, but reactions.add
+		# requires membership — join public channels on demand and retry once.
+		# Private channels can't be joined; there an /invite is the only way.
+		if e.code in ("channel_not_found", "not_in_channel"):
+			try:
+				client.join_channel(channel)
+				client.add_reaction(channel, ts, emoji)
+			except Exception:
+				pass  # cosmetic — the log itself succeeded
+		elif e.code != "already_reacted":
 			frappe.log_error(title="Slack Bridge: reaction failed", message=frappe.get_traceback())
 	except Exception:
 		frappe.log_error(title="Slack Bridge: reaction failed", message=frappe.get_traceback())
