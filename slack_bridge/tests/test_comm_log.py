@@ -417,3 +417,26 @@ class TestVttToText(SlackBridgeTestCase):
 
 	def test_empty_vtt(self):
 		self.assertEqual(comm_log.vtt_to_text(""), "")
+
+
+class TestNotesFormatting(SlackBridgeTestCase):
+	def test_demarkdown_unescapes_slack_entities(self):
+		self.assertEqual(comm_log.demarkdown("JTL -&gt; Distrify &amp; Co"), "JTL -> Distrify & Co")
+
+	def test_demarkdown_unwraps_links_and_mentions(self):
+		self.assertEqual(
+			comm_log.demarkdown("siehe <https://example.com|Angebot> von <@U123>"),
+			"siehe Angebot (https://example.com) von @U123",
+		)
+
+	def test_bullets_become_a_list(self):
+		html = comm_log.notes_to_html("Call mit Alex\n• Winbond Preise\n• 4 Key Anfragen\nFazit: gut")
+		self.assertEqual(
+			html,
+			"<div>Call mit Alex</div>"
+			"<ul><li>Winbond Preise</li><li>4 Key Anfragen</li></ul>"
+			"<div>Fazit: gut</div>",
+		)
+
+	def test_content_is_escaped(self):
+		self.assertEqual(comm_log.notes_to_html("• a <b> & c"), "<ul><li>a &lt;b&gt; &amp; c</li></ul>")
