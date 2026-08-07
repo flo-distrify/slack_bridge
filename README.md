@@ -35,7 +35,9 @@ fields you chose — gated on the sharer's read permission, so nothing leaks int
 ("Log as Phone Call") that turns any Slack message — typed notes or a **voice clip, using
 Slack's own transcript** — into a timeline Communication on a document of your choosing.
 A type-ahead picker searches the doctypes you configure (Leads, Customers, …), permission-
-aware as the linked user.
+aware as the linked user. Slack bullet lists survive as nested lists, and the bot marks
+the source message with a configurable ✅ reaction once it is in the ERP — the channel
+sees at a glance what has been logged.
 
 **Reliability.** Every outbound message is a durable outbox row: per-channel pacing to
 respect Slack's one-message-per-second limit, exponential backoff, `Retry-After`

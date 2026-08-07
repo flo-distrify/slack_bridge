@@ -192,7 +192,8 @@ To enable it:
    and one **party doctype** row per searchable target — e.g. `Lead` with search fields
    `lead_name, company_name`, and `Customer` with `customer_name, name`.
 2. Re-copy the generated manifest from the Slack Workspace document into your Slack
-   app's configuration (it now contains the shortcut and the `files:read` scope).
+   app's configuration (it now contains the shortcut, the Options Load URL for the
+   picker, and the `files:read` / `channels:join` scopes).
 3. **Reinstall the app to the workspace** — a scope change always requires a reinstall.
 
 Notes:
@@ -202,6 +203,12 @@ Notes:
 - Voice-clip transcripts are Slack's native transcription. If it is still processing
   when the modal opens, the user is told to type notes or retry in a minute; an empty
   notes field is refetched once at submit time.
+- Slack bullet lists (including `◦`/`▪` sub-levels) become nested lists in the logged
+  Communication; mrkdwn links unwrap to "label (url)".
+- After a successful log the bot reacts to the source message (default
+  `:white_check_mark:`, per-shortcut **Synced Reaction** field, clear to disable).
+  Reactions require channel membership: the bot joins public channels by itself
+  (`channels:join`); in **private channels** it must be `/invite`d once.
 - Everything is deduplicated: re-invoking the shortcut later is allowed, Slack's
   redeliveries and double submissions are not.
 
