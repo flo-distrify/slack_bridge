@@ -442,6 +442,13 @@ class TestFormValueExtraction(SlackBridgeTestCase):
 def create_limited_user() -> str:
 	email = "slack-bridge-limited@example.com"
 
+	# A dedicated no-permission role: "Blogger" (used previously) was removed
+	# from frappe core in v16, so the fixture provides its own.
+	if not frappe.db.exists("Role", "Slack Bridge Limited"):
+		frappe.get_doc({"doctype": "Role", "role_name": "Slack Bridge Limited"}).insert(
+			ignore_permissions=True
+		)
+
 	if not frappe.db.exists("User", email):
 		user = frappe.get_doc(
 			{
@@ -449,7 +456,7 @@ def create_limited_user() -> str:
 				"email": email,
 				"first_name": "Limited",
 				"send_welcome_email": 0,
-				"roles": [{"role": "Blogger"}],
+				"roles": [{"role": "Slack Bridge Limited"}],
 			}
 		)
 		user.insert(ignore_permissions=True)
