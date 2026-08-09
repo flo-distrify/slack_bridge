@@ -27,6 +27,11 @@ class SlackRequestError(frappe.ValidationError):
 def respond(payload: dict | None = None, status: int = 200) -> None:
 	"""Emit an exact JSON body to Slack instead of Frappe's {"message": ...} envelope."""
 	frappe.local.response.clear()
+	# Document hooks (a failing Notification, a msgprint in a server script) queue
+	# server messages that Frappe appends to the body at serialisation time — Slack
+	# rejects the unexpected key and shows a generic error. Drop them; they belong
+	# to Desk sessions, not protocol responses.
+	frappe.clear_messages()
 	if payload:
 		frappe.local.response.update(payload)
 	frappe.local.response["http_status_code"] = status
