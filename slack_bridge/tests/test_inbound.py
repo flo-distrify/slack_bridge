@@ -462,3 +462,16 @@ def create_limited_user() -> str:
 		user.insert(ignore_permissions=True)
 
 	return email
+
+
+class TestProtocolResponses(SlackBridgeTestCase):
+	def test_respond_drops_queued_server_messages(self):
+		# A failing Notification or a msgprint in a document hook queues messages that
+		# Frappe appends to the response body — Slack rejects the unexpected key.
+		frappe.msgprint("Failed to send Notification", raise_exception=False)
+		self.assertTrue(frappe.local.message_log)
+
+		base.respond({"response_action": "clear"})
+
+		self.assertFalse(frappe.local.message_log)
+		self.assertEqual(frappe.local.response.get("response_action"), "clear")
