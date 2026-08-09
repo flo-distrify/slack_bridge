@@ -64,7 +64,18 @@ def html_to_mrkdwn(value) -> str:
 
 
 def get_doc_url(doc) -> str:
+	"""The link Slack messages carry for a document.
+
+	Sites whose users live in a custom frontend can register resolvers via the
+	`slack_bridge_doc_url` hook — `resolver(doctype, name) -> url | None`, first
+	truthy result wins — so links open where people actually work. Fallback is
+	the Desk form URL.
+	"""
 	try:
+		for method in frappe.get_hooks("slack_bridge_doc_url"):
+			url = frappe.get_attr(method)(doc.doctype, doc.name)
+			if url:
+				return url
 		return frappe.utils.get_url_to_form(doc.doctype, doc.name)
 	except Exception:
 		return frappe.utils.get_url()

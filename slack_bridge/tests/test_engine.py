@@ -426,3 +426,48 @@ class TestHtmlToMrkdwn(SlackBridgeTestCase):
 		rendered = render("{{ html_to_mrkdwn(doc.description) }}", doc)
 
 		self.assertEqual(rendered, "*Bold* task")
+
+
+def studio_style_resolver(doctype, name):
+	if doctype == "ToDo":
+		return f"https://example.com/studio#/todo/{name}"
+	return None
+
+
+class TestDocUrlResolvers(SlackBridgeTestCase):
+	def test_hooked_resolver_wins_over_desk_url(self):
+		from unittest.mock import patch
+
+		from slack_bridge.engine.context import get_doc_url
+
+		doc = make_todo()
+		original_get_hooks = frappe.get_hooks
+
+		def with_resolver(hook=None, *args, **kwargs):
+			if hook == "slack_bridge_doc_url":
+				return ["slack_bridge.tests.test_engine.studio_style_resolver"]
+			return original_get_hooks(hook, *args, **kwargs) if hook else original_get_hooks()
+
+		with patch.object(frappe, "get_hooks", side_effect=with_resolver):
+			url = get_doc_url(doc)
+
+		self.assertEqual(url, f"https://example.com/studio#/todo/{doc.name}")
+
+	def test_declining_resolver_falls_back_to_desk(self):
+		from unittest.mock import patch
+
+		from slack_bridge.engine.context import get_doc_url
+
+		rule = ensure_rule("SB Test DocUrl Fallback")
+		original_get_hooks = frappe.get_hooks
+
+		def with_resolver(hook=None, *args, **kwargs):
+			if hook == "slack_bridge_doc_url":
+				return ["slack_bridge.tests.test_engine.studio_style_resolver"]
+			return original_get_hooks(hook, *args, **kwargs) if hook else original_get_hooks()
+
+		# The resolver returns None for non-ToDo doctypes → Desk form URL.
+		with patch.object(frappe, "get_hooks", side_effect=with_resolver):
+			url = get_doc_url(rule)
+
+		self.assertIn("slack-notification-rule", url)
