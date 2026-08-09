@@ -257,6 +257,11 @@ class TestPickerFlow(DynamicFormTestCase):
 		with fake_slack() as mocked:
 			self.post_command("dynform")
 
+		# The HTTP reply must be zero bytes: slash commands render any body — even "{}" —
+		# as a channel message next to the opened modal.
+		self.assertEqual(frappe.local.response.get("type"), "binary")
+		self.assertEqual(frappe.local.response.get("filecontent"), b"")
+
 		call = mocked.call_args
 		self.assertIn("views.open", call.args[0])
 		view = json.loads(call.kwargs["data"])["view"]
