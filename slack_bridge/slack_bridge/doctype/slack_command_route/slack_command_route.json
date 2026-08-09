@@ -17,6 +17,7 @@
   "help_text",
   "sb_target",
   "form",
+  "dynamic_form",
   "method",
   "server_script",
   "builtin",
@@ -69,7 +70,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Does",
-   "options": "Open Form\nRun Method\nRun Server Script\nBuilt-in",
+   "options": "Open Form\nOpen Dynamic Form\nRun Method\nRun Server Script\nBuilt-in",
    "reqd": 1
   },
   {
@@ -90,6 +91,14 @@
    "label": "Form",
    "mandatory_depends_on": "eval:doc.route_type=='Open Form'",
    "options": "Slack Form"
+  },
+  {
+   "depends_on": "eval:doc.route_type=='Open Dynamic Form'",
+   "fieldname": "dynamic_form",
+   "fieldtype": "Link",
+   "label": "Dynamic Form",
+   "mandatory_depends_on": "eval:doc.route_type=='Open Dynamic Form'",
+   "options": "Slack Dynamic Form"
   },
   {
    "depends_on": "eval:doc.route_type=='Run Method'",

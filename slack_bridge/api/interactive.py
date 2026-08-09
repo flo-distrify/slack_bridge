@@ -35,13 +35,23 @@ def handle():
 
 		handle_message_action(workspace, payload)
 	elif kind == "block_suggestion":
-		from slack_bridge.api.comm_log import handle_block_suggestion
-
 		handle_block_suggestion(workspace, payload)
 	elif kind == "view_closed":
 		base.respond()
 	else:
 		base.respond()
+
+
+def handle_block_suggestion(workspace, payload: dict) -> None:
+	"""Route option lookups to whichever feature owns the action_id."""
+	if (payload.get("action_id") or "").startswith("sbdf_"):
+		from slack_bridge.api.dynamic_forms import handle_suggestion
+
+		handle_suggestion(workspace, payload)
+	else:
+		from slack_bridge.api.comm_log import handle_block_suggestion as comm_log_suggestion
+
+		comm_log_suggestion(workspace, payload)
 
 
 # ----------------------------------------------------------------- button clicks
@@ -160,6 +170,14 @@ def handle_view_submission(workspace, payload: dict) -> None:
 	except ValueError:
 		metadata = {}
 
+	# The dynamic-form picker stage only renders the next view — it writes nothing, and
+	# claiming it would make a Slack retry of the same submission close the modal mid-flow.
+	if view.get("callback_id") == "sb_dyn_pick":
+		from slack_bridge.api.dynamic_forms import handle_pick_submission
+
+		handle_pick_submission(workspace, payload)
+		return
+
 	mapping = base.resolve_user(workspace.name, slack_user_id)
 	if not mapping:
 		base.respond(
@@ -174,6 +192,8 @@ def handle_view_submission(workspace, payload: dict) -> None:
 		)
 		return
 
+	# Stage-2 dynamic-form views share the view id with their stage-1 picker, but Slack
+	# issues a fresh hash on every response_action update, so the keys never collide.
 	key = base.idempotency_key(view.get("id"), view.get("hash"), slack_user_id)
 	log_name = base.claim(
 		key,
@@ -199,6 +219,17 @@ def handle_view_submission(workspace, payload: dict) -> None:
 			from slack_bridge.api.comm_log import submit_comm_log
 
 			result = submit_comm_log(
+				workspace=workspace,
+				view=view,
+				metadata=metadata,
+				user=mapping.user,
+				slack_user_id=slack_user_id,
+				log_name=log_name,
+			)
+		elif view.get("callback_id") == "sb_dyn_form":
+			from slack_bridge.api.dynamic_forms import submit_dynamic_form
+
+			result = submit_dynamic_form(
 				workspace=workspace,
 				view=view,
 				metadata=metadata,

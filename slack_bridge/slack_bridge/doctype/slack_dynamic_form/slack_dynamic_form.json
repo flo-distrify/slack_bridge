@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:title",
+ "creation": "2026-08-09 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_main",
+  "title",
+  "enabled",
+  "cb_main",
+  "workspace",
+  "sb_modal",
+  "modal_title",
+  "picker_label",
+  "cb_modal",
+  "min_query_length",
+  "submit_in_background",
+  "sb_provider",
+  "options_method",
+  "schema_method",
+  "submit_method",
+  "sb_guard",
+  "required_role",
+  "sb_help",
+  "form_help"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_main",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "cb_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "workspace",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Workspace",
+   "options": "Slack Workspace",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_modal",
+   "fieldtype": "Section Break",
+   "label": "Modal"
+  },
+  {
+   "description": "Slack caps modal titles at 24 characters. The provider's schema title wins when set.",
+   "fieldname": "modal_title",
+   "fieldtype": "Data",
+   "label": "Modal Title"
+  },
+  {
+   "description": "Label above the search picker.",
+   "fieldname": "picker_label",
+   "fieldtype": "Data",
+   "label": "Picker Label"
+  },
+  {
+   "fieldname": "cb_modal",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "2",
+   "description": "Characters the user must type before the picker searches.",
+   "fieldname": "min_query_length",
+   "fieldtype": "Int",
+   "label": "Minimum Query Length"
+  },
+  {
+   "default": "0",
+   "description": "Close the modal immediately and run the submit method in a background job; the result arrives as a DM. Use for slow submit methods — the default (inline) can report validation errors in the modal but must finish within Slack's three-second budget.",
+   "fieldname": "submit_in_background",
+   "fieldtype": "Check",
+   "label": "Submit in Background"
+  },
+  {
+   "description": "The three dotted method paths below form the provider contract. All run as the mapped Frappe user. See docs/dynamic-forms.md.",
+   "fieldname": "sb_provider",
+   "fieldtype": "Section Break",
+   "label": "Provider"
+  },
+  {
+   "description": "options(query, context) → [{\"value\": …, \"label\": …}] — the searchable choices.",
+   "fieldname": "options_method",
+   "fieldtype": "Data",
+   "label": "Options Method",
+   "reqd": 1
+  },
+  {
+   "description": "schema(key, context) → {\"title\", \"submit_label\", \"fields\": […]} — the input fields for a choice.",
+   "fieldname": "schema_method",
+   "fieldtype": "Data",
+   "label": "Schema Method",
+   "reqd": 1
+  },
+  {
+   "description": "submit(key, values, context) → confirmation message — performs the action.",
+   "fieldname": "submit_method",
+   "fieldtype": "Data",
+   "label": "Submit Method",
+   "reqd": 1
+  },
+  {
+   "fieldname": "sb_guard",
+   "fieldtype": "Section Break",
+   "label": "Guards"
+  },
+  {
+   "fieldname": "required_role",
+   "fieldtype": "Link",
+   "label": "Required Role",
+   "options": "Role"
+  },
+  {
+   "fieldname": "sb_help",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "form_help",
+   "fieldtype": "HTML",
+   "options": "<p class='text-muted small'>A dynamic form's choices and input fields come from another app at runtime, so its modal always reflects that app's current configuration. Point a <b>Slack Command Route</b> (Does: Open Dynamic Form) at this record to expose it as a slash command.</p>"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-08-09 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Slack Bridge",
+ "name": "Slack Dynamic Form",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title",
+ "track_changes": 1
+}
