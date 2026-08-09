@@ -273,7 +273,9 @@ class TestOutbox(SlackBridgeTestCase):
 				send_now=False,
 			)
 
-		with fake_slack({"ok": False, "error": "ratelimited"}, status_code=429, headers={"Retry-After": "30"}):
+		with fake_slack(
+			{"ok": False, "error": "ratelimited"}, status_code=429, headers={"Retry-After": "30"}
+		):
 			outbox.deliver(name)
 
 		log = frappe.get_doc("Slack Message Log", name)
@@ -386,3 +388,41 @@ class TestTemplateContext(SlackBridgeTestCase):
 		doc = make_todo()
 		with self.assertRaises(Exception):
 			render("{{ json.__class__.__mro__ }}", doc)
+
+
+class TestHtmlToMrkdwn(SlackBridgeTestCase):
+	def test_common_structure_is_converted(self):
+		from slack_bridge.engine.context import html_to_mrkdwn
+
+		html = "<b>Form Test</b> — Manual<br>Priority: <strong>Medium</strong><div>Assigned by flo@distrify.io</div>"
+		out = html_to_mrkdwn(html)
+
+		self.assertIn("*Form Test* — Manual\nPriority: *Medium*", out)
+		self.assertIn("\nAssigned by flo@distrify.io", out)
+		self.assertNotIn("<b>", out)
+		self.assertNotIn("<div>", out)
+
+	def test_links_lists_and_entities(self):
+		from slack_bridge.engine.context import html_to_mrkdwn
+
+		html = '<a href="https://example.com/x">Open it</a> &amp; more<ul><li>one</li><li>two</li></ul>'
+		out = html_to_mrkdwn(html)
+
+		self.assertIn("<https://example.com/x|Open it>", out)
+		self.assertIn("&amp; more", out)
+		self.assertIn("• one\n• two", out)
+
+	def test_plain_text_is_transport_escaped(self):
+		from slack_bridge.engine.context import html_to_mrkdwn
+
+		self.assertEqual(html_to_mrkdwn("a < b & c"), "a &lt; b &amp; c")
+		self.assertEqual(html_to_mrkdwn(""), "")
+		self.assertEqual(html_to_mrkdwn(None), "")
+
+	def test_helper_is_available_in_templates(self):
+		doc = make_todo()
+		doc.description = "<b>Bold</b> task"
+
+		rendered = render("{{ html_to_mrkdwn(doc.description) }}", doc)
+
+		self.assertEqual(rendered, "*Bold* task")
