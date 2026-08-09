@@ -31,8 +31,6 @@ def handle():
 	elif kind == "view_submission":
 		handle_view_submission(workspace, payload)
 	elif kind == "message_action":
-		from slack_bridge.api.comm_log import handle_message_action
-
 		handle_message_action(workspace, payload)
 	elif kind == "block_suggestion":
 		handle_block_suggestion(workspace, payload)
@@ -40,6 +38,22 @@ def handle():
 		base.respond()
 	else:
 		base.respond()
+
+
+def handle_message_action(workspace, payload: dict) -> None:
+	"""Route a message shortcut to whichever feature owns its callback_id."""
+	callback_id = payload.get("callback_id")
+
+	if callback_id and frappe.db.get_value(
+		"Slack Form", {"shortcut_callback_id": callback_id, "message_shortcut": 1}, "name"
+	):
+		from slack_bridge.api.forms import handle_message_action as form_shortcut
+
+		form_shortcut(workspace, payload)
+	else:
+		from slack_bridge.api.comm_log import handle_message_action as comm_log_action
+
+		comm_log_action(workspace, payload)
 
 
 def handle_block_suggestion(workspace, payload: dict) -> None:
@@ -101,9 +115,7 @@ def handle_block_actions(workspace, payload: dict) -> None:
 		base.respond(base.link_prompt())
 		return
 
-	frappe.db.set_value(
-		"Slack Interaction Log", log_name, "frappe_user", mapping.user, update_modified=False
-	)
+	frappe.db.set_value("Slack Interaction Log", log_name, "frappe_user", mapping.user, update_modified=False)
 
 	action_doc = frappe.get_cached_doc("Slack Action", value["action"])
 
@@ -129,9 +141,7 @@ def handle_block_actions(workspace, payload: dict) -> None:
 			)
 			base.finish(log_name, "Processed", "Opened input modal")
 		except Exception:
-			frappe.log_error(
-				title="Slack Bridge: could not open modal", message=frappe.get_traceback()
-			)
+			frappe.log_error(title="Slack Bridge: could not open modal", message=frappe.get_traceback())
 			base.finish(log_name, "Failed", "Could not open modal")
 
 		base.respond()

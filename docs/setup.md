@@ -206,6 +206,20 @@ must register the command itself. New subcommands need no Slack-side change.
 
 ---
 
+### Forms in the message menu
+
+Tick **Offer as Message Shortcut** on a Slack Form and it appears in every message's
+shortcuts menu (set a label ≤24 chars, a unique callback id, and optionally a
+**Prefill Field** — a Text/Long Text field that receives the message's text, with
+Slack link markup unwrapped). Right-click a message → the shortcut → adjust the
+prefilled form → submit; the document is created as the submitting user and they get
+a confirmation with a link. After enabling, regenerate the manifest and re-paste it
+into the Slack app config so the menu entry appears — no reinstall, no new scopes.
+
+Example — "Create ToDo" next to "Log as Phone Call": a Slack Form on ToDo with a
+title field, `description` (Long Text, the prefill field) and `allocated_to` (User),
+shortcut label "Create ToDo".
+
 ## Dynamic forms
 
 When the form's choices and fields live in *another* app — start a process, book a

@@ -32,6 +32,8 @@ audit line added — so nobody can approve the same thing twice.
 **Commands and forms.** Route `/erp <subcommand>` to a modal form that creates or updates
 a document, to a Server Script, or to a whitelisted method. Built-in subcommands cover
 account linking, help, and GitHub-style channel subscriptions (`/erp subscribe <rule>`).
+Any form can also sit in the **message menu** ("Create ToDo" on a right-clicked message,
+prefilled with its text).
 
 **Dynamic forms.** A *Slack Dynamic Form* lets any other Frappe app serve modal forms
 to Slack through three dotted method paths (options / schema / submit) — a searchable

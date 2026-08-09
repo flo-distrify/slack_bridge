@@ -58,9 +58,9 @@ def build_manifest(workspace) -> dict:
 	manifest = {
 		"display_information": {
 			"name": (workspace.slack_app_name or "ERP Bridge")[:35],
-			"description": (workspace.slack_app_description or "Connects Slack with your Frappe/ERPNext site")[
-				:140
-			],
+			"description": (
+				workspace.slack_app_description or "Connects Slack with your Frappe/ERPNext site"
+			)[:140],
 			"background_color": "#1f3b57",
 		},
 		"features": {
@@ -146,25 +146,45 @@ def get_message_shortcuts(workspace_name: str) -> list[dict]:
 
 	Shortcuts arrive on the interactivity Request URL, so they carry no URL of their own.
 	"""
-	if not frappe.db.table_exists("Slack Communication Shortcut"):
-		return []
+	shortcuts = []
 
-	rows = frappe.get_all(
-		"Slack Communication Shortcut",
-		filters={"enabled": 1, "workspace": workspace_name},
-		fields=["shortcut_label", "shortcut_description", "callback_id"],
-		order_by="creation asc",
-	)
+	if frappe.db.table_exists("Slack Communication Shortcut"):
+		rows = frappe.get_all(
+			"Slack Communication Shortcut",
+			filters={"enabled": 1, "workspace": workspace_name},
+			fields=["shortcut_label", "shortcut_description", "callback_id"],
+			order_by="creation asc",
+		)
+		shortcuts += [
+			{
+				"name": row.shortcut_label[:24],
+				"type": "message",
+				"callback_id": row.callback_id[:255],
+				"description": (row.shortcut_description or "Log this message to your ERP")[:50],
+			}
+			for row in rows
+		]
 
-	return [
-		{
-			"name": row.shortcut_label[:24],
-			"type": "message",
-			"callback_id": row.callback_id[:255],
-			"description": (row.shortcut_description or "Log this message to your ERP")[:50],
-		}
-		for row in rows
-	]
+	# Slack Forms offered as message shortcuts (the column guard covers pre-migrate builds).
+	if frappe.db.table_exists("Slack Form") and frappe.db.has_column("Slack Form", "message_shortcut"):
+		rows = frappe.get_all(
+			"Slack Form",
+			filters={"enabled": 1, "message_shortcut": 1},
+			fields=["shortcut_label", "shortcut_description", "shortcut_callback_id", "title"],
+			order_by="creation asc",
+		)
+		shortcuts += [
+			{
+				"name": (row.shortcut_label or row.title)[:24],
+				"type": "message",
+				"callback_id": row.shortcut_callback_id[:255],
+				"description": (row.shortcut_description or "Open this form with the message text")[:50],
+			}
+			for row in rows
+			if row.shortcut_callback_id
+		]
+
+	return shortcuts
 
 
 def manifest_json(workspace) -> str:

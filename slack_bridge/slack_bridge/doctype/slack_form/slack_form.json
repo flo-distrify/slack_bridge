@@ -22,7 +22,14 @@
   "sb_after",
   "submit_action",
   "after_submit_message",
-  "post_to_channel"
+  "post_to_channel",
+  "sb_shortcut",
+  "message_shortcut",
+  "shortcut_label",
+  "shortcut_description",
+  "cb_shortcut",
+  "shortcut_callback_id",
+  "shortcut_prefill_field"
  ],
  "fields": [
   {
@@ -120,6 +127,52 @@
    "fieldname": "post_to_channel",
    "fieldtype": "Check",
    "label": "Announce in the Originating Channel"
+  },
+  {
+   "fieldname": "sb_shortcut",
+   "fieldtype": "Section Break",
+   "label": "Message Shortcut"
+  },
+  {
+   "default": "0",
+   "description": "Offer this form in Slack's message menu (the right-click → shortcuts list). Regenerate and re-paste the app manifest after enabling.",
+   "fieldname": "message_shortcut",
+   "fieldtype": "Check",
+   "label": "Offer as Message Shortcut"
+  },
+  {
+   "depends_on": "eval:doc.message_shortcut",
+   "description": "Menu entry name, at most 24 characters.",
+   "fieldname": "shortcut_label",
+   "fieldtype": "Data",
+   "label": "Shortcut Label",
+   "mandatory_depends_on": "eval:doc.message_shortcut"
+  },
+  {
+   "depends_on": "eval:doc.message_shortcut",
+   "description": "At most 50 characters.",
+   "fieldname": "shortcut_description",
+   "fieldtype": "Data",
+   "label": "Shortcut Description"
+  },
+  {
+   "fieldname": "cb_shortcut",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.message_shortcut",
+   "description": "Unique id Slack sends back, e.g. sb_form_todo.",
+   "fieldname": "shortcut_callback_id",
+   "fieldtype": "Data",
+   "label": "Shortcut Callback Id",
+   "mandatory_depends_on": "eval:doc.message_shortcut"
+  },
+  {
+   "depends_on": "eval:doc.message_shortcut",
+   "description": "Form field (Text / Long Text) prefilled with the Slack message text.",
+   "fieldname": "shortcut_prefill_field",
+   "fieldtype": "Data",
+   "label": "Prefill Field"
   }
  ],
  "index_web_pages_for_search": 0,
