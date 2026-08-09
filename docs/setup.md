@@ -281,6 +281,20 @@ permission on that document, so pasting a link cannot leak fields to a channel.
 
 ---
 
+## Document links
+
+Every link the bridge sends (notification `doc_url`, form confirmations, shortcut
+results) defaults to the Desk form URL. If your users live in a custom frontend,
+register a resolver in your app's `hooks.py`:
+
+```python
+slack_bridge_doc_url = ["my_app.utils.slack_document_link"]
+```
+
+`resolver(doctype, name) -> url | None` — return the URL your frontend uses, or
+`None` to decline (the next resolver, then Desk, takes over). No import of
+slack_bridge is needed; the hook is inert when slack_bridge is not installed.
+
 ## Operating it
 
 - **Slack Message Log** is the delivery record: every message with its status, channel,
