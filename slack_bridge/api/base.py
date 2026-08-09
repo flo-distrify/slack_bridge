@@ -50,7 +50,12 @@ def get_workspace():
 	if not is_enabled():
 		raise SlackRequestError(_("Slack Bridge is disabled"))
 
-	token = frappe.form_dict.get("token") or frappe.request.args.get("token")
+	# Slack's own payloads carry a legacy `token` field in the BODY (slash commands,
+	# the events url_verification challenge) which Frappe merges into form_dict — it
+	# must never shadow the endpoint token in the Request URL's query string. This is
+	# why interactivity (whose body has only `payload`) worked while commands and the
+	# events challenge failed with 401.
+	token = frappe.request.args.get("token") or frappe.form_dict.get("token")
 	workspace = get_workspace_by_token(token)
 
 	if not workspace:

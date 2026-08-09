@@ -25,16 +25,21 @@ from slack_bridge.tests.fixtures import (
 SLACK_USER_ID = "U0TESTUSER"
 
 
-def slack_request(body: bytes, workspace, sign: bool = True, timestamp: str | None = None):
+def slack_request(
+	body: bytes,
+	workspace,
+	sign: bool = True,
+	timestamp: str | None = None,
+	path_method: str = "slack_bridge.api.events.handle",
+	token: str | None = None,
+):
 	"""Build a signed Slack request exactly as Slack would send it."""
 	timestamp = timestamp or str(int(time.time()))
-	signature = compute_signature(
-		SIGNING_SECRET if sign else "wrong-secret", timestamp, body
-	)
+	signature = compute_signature(SIGNING_SECRET if sign else "wrong-secret", timestamp, body)
 
 	set_request(
 		method="POST",
-		path=f"/api/method/slack_bridge.api.events.handle?token={workspace.endpoint_token}",
+		path=f"/api/method/{path_method}?token={token or workspace.endpoint_token}",
 		data=body,
 		headers={
 			"X-Slack-Request-Timestamp": timestamp,
@@ -158,7 +163,9 @@ class TestEventsEndpoint(SlackBridgeTestCase):
 
 	def test_unknown_token_is_rejected(self):
 		body = json.dumps({"type": "url_verification", "challenge": "abc"}).encode()
-		slack_request(body, self.workspace)
+		# The endpoint token lives in the Request URL's query string — a wrong one there
+		# must 401 no matter what the body carries.
+		slack_request(body, self.workspace, token="not-a-real-token")
 		frappe.form_dict.token = "not-a-real-token"
 
 		events.handle()
@@ -475,3 +482,44 @@ class TestProtocolResponses(SlackBridgeTestCase):
 
 		self.assertFalse(frappe.local.message_log)
 		self.assertEqual(frappe.local.response.get("response_action"), "clear")
+
+
+class TestBodyTokenShadowing(SlackBridgeTestCase):
+	@classmethod
+	def setUpClass(cls):
+		super().setUpClass()
+		cls.workspace = ensure_workspace()
+
+	def test_challenge_with_legacy_body_token_still_authenticates(self):
+		# Slack's url_verification JSON carries its own legacy `token` field; Frappe
+		# merges body fields into form_dict, which must not shadow the ?token= query arg.
+		body = json.dumps(
+			{"type": "url_verification", "challenge": "abc123", "token": "legacy-verification-token"}
+		).encode()
+		slack_request(body, self.workspace)
+		frappe.form_dict.token = "legacy-verification-token"  # what the body merge does
+
+		events.handle()
+
+		self.assertEqual(frappe.local.response.get("challenge"), "abc123")
+
+	def test_command_with_legacy_body_token_still_authenticates(self):
+		# Slash-command POSTs include the same legacy token as a form field.
+		fields = {
+			"token": "legacy-verification-token",
+			"command": "/erp",
+			"text": "help",
+			"user_id": "U0TOKENTEST",
+			"channel_id": CHANNEL_ID,
+			"trigger_id": f"1.{frappe.generate_hash(length=8)}.a",
+			"response_url": "https://hooks.slack.com/commands/T0TEST/1/2",
+		}
+		body = urlencode(fields).encode()
+		slack_request(body, self.workspace, path_method="slack_bridge.api.commands.handle")
+		frappe.form_dict.update(fields)
+
+		commands.handle()
+
+		# An unauthorized request would be a bare 401; a routed one answers in words.
+		self.assertNotEqual(frappe.local.response.get("http_status_code"), 401)
+		self.assertTrue(frappe.local.response.get("text") or frappe.local.response.get("blocks"))
