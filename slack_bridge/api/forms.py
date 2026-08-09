@@ -296,6 +296,12 @@ def submit_form(workspace, view: dict, metadata: dict, user: str, slack_user_id:
 	doc = save_document(form, values, metadata, user)
 	base.finish(log_name, "Processed", f"{doc.doctype} {doc.name}")
 
+	# A shortcut submission marks its source message as handled — the in-channel ✓.
+	if metadata.get("message_ts") and form.get("reaction_emoji"):
+		from slack_bridge.api.comm_log import react_to_source
+
+		react_to_source(workspace, form, metadata)
+
 	notify_submitter(workspace, form, doc, metadata, slack_user_id)
 	return {"response_action": "clear"}
 
@@ -330,7 +336,16 @@ def notify_submitter(workspace, form, doc, metadata: dict, slack_user_id: str) -
 	from slack_bridge.engine.context import get_doc_url
 
 	url = get_doc_url(doc)
-	text = _("Saved {0} <{1}|{2}>").format(doc.doctype, url, doc.name)
+	title = None
+	try:
+		title = doc.get_title()
+	except Exception:
+		pass
+
+	verb = _("updated") if form.mode == "Update" else _("created")
+	text = _(":white_check_mark: {0} {1} — <{2}|{3}>").format(
+		doc.doctype, verb, url, bk.truncate(str(title or doc.name), 120)
+	)
 
 	if form.after_submit_message:
 		try:
