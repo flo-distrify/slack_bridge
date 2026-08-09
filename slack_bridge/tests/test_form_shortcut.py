@@ -175,3 +175,50 @@ class TestShortcutFlow(CommLogTestCase):
 
 		self.assertEqual(frappe.local.response.get("response_action"), "clear")
 		self.assertTrue(frappe.db.exists("Note", {"title": marker}))
+
+
+class TestConfirmationFallback(CommLogTestCase):
+	def test_ephemeral_falls_back_to_join_then_dm(self):
+		from unittest.mock import patch
+
+		from slack_bridge.slack.client import SlackClient, confirm_to_user
+		from slack_bridge.tests.fixtures import FakeResponse
+
+		sent = []
+
+		def responder(url, **kwargs):
+			sent.append(url)
+			if "chat.postEphemeral" in url:
+				return FakeResponse({"ok": False, "error": "channel_not_found"})
+			if "conversations.join" in url:
+				return FakeResponse({"ok": False, "error": "method_not_supported_for_channel_type"})
+			if "conversations.open" in url:
+				return FakeResponse({"ok": True, "channel": {"id": "D0FALLBACK"}})
+			return FakeResponse({"ok": True, "ts": "1700000000.000100", "channel": "D0FALLBACK"})
+
+		client = SlackClient(ensure_workspace())
+		with patch("slack_bridge.slack.client.requests.post", side_effect=responder):
+			confirm_to_user(client, "C0NOTAMEMBER", "U0SOMEONE", "Saved.")
+
+		# postEphemeral → join fails → the DM still lands.
+		self.assertTrue(any("conversations.open" in u for u in sent))
+		self.assertTrue(any("chat.postMessage" in u for u in sent))
+
+	def test_ephemeral_in_joined_channel_needs_no_fallback(self):
+		from unittest.mock import patch
+
+		from slack_bridge.slack.client import SlackClient, confirm_to_user
+		from slack_bridge.tests.fixtures import FakeResponse
+
+		sent = []
+
+		def responder(url, **kwargs):
+			sent.append(url)
+			return FakeResponse({"ok": True})
+
+		client = SlackClient(ensure_workspace())
+		with patch("slack_bridge.slack.client.requests.post", side_effect=responder):
+			confirm_to_user(client, CHANNEL_ID, "U0SOMEONE", "Saved.")
+
+		self.assertEqual(len(sent), 1)
+		self.assertIn("chat.postEphemeral", sent[0])

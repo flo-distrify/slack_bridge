@@ -338,16 +338,15 @@ def notify_submitter(workspace, form, doc, metadata: dict, slack_user_id: str) -
 		except Exception:
 			pass
 
+	from slack_bridge.slack.client import confirm_to_user
+
 	client = SlackClient(workspace)
 	channel = metadata.get("channel")
 
 	try:
 		if form.post_to_channel and channel:
 			client.post_message(channel=channel, text=text, blocks=[bk.section(text)])
-		elif channel:
-			client.post_ephemeral(channel=channel, user=slack_user_id, text=text)
 		else:
-			dm = client.open_dm(slack_user_id)
-			client.post_message(channel=dm, text=text, blocks=[bk.section(text)])
+			confirm_to_user(client, channel, slack_user_id, text)
 	except Exception:
 		frappe.log_error(title="Slack Bridge: confirmation failed", message=frappe.get_traceback())
