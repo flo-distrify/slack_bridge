@@ -159,7 +159,9 @@ class TestShortcutFlow(CommLogTestCase):
 				"id": f"V{frappe.generate_hash(length=8)}",
 				"hash": frappe.generate_hash(length=10),
 				"callback_id": "sb_form",
-				"private_metadata": json.dumps({"form": form.name, "channel": CHANNEL_ID}),
+				"private_metadata": json.dumps(
+					{"form": form.name, "channel": CHANNEL_ID, "message_ts": "1700000002.000100"}
+				),
 				"blocks": [{"block_id": "f_0_title"}, {"block_id": "f_1_content"}],
 				"state": {
 					"values": {
@@ -170,11 +172,17 @@ class TestShortcutFlow(CommLogTestCase):
 			},
 		}
 
-		with fake_slack():
+		with fake_slack() as mocked:
 			self.post_payload(payload)
 
 		self.assertEqual(frappe.local.response.get("response_action"), "clear")
 		self.assertTrue(frappe.db.exists("Note", {"title": marker}))
+
+		urls = [c.args[0] for c in mocked.call_args_list]
+		# The source message gets the success reaction, the submitter a ✓ confirmation.
+		self.assertTrue(any("reactions.add" in u for u in urls))
+		ephemeral = next(c for c in mocked.call_args_list if "chat.postEphemeral" in c.args[0])
+		self.assertIn("white_check_mark", json.dumps(json.loads(ephemeral.kwargs["data"])))
 
 
 class TestConfirmationFallback(CommLogTestCase):
