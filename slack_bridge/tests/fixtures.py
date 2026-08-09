@@ -74,6 +74,39 @@ def ensure_channel(workspace: str = WORKSPACE, channel_id: str = CHANNEL_ID, cha
 	return name
 
 
+def ensure_user(email: str):
+	if frappe.db.exists("User", email):
+		return email
+
+	frappe.get_doc(
+		{
+			"doctype": "User",
+			"email": email,
+			"first_name": email.split("@")[0],
+			"send_welcome_email": 0,
+		}
+	).insert(ignore_permissions=True)
+	return email
+
+
+def ensure_slack_user(user: str, slack_user_id: str = "U0TESTUSER", workspace: str = WORKSPACE):
+	name = frappe.db.get_value("Slack User", {"user": user, "workspace": workspace})
+	if name:
+		return name
+
+	doc = frappe.get_doc(
+		{
+			"doctype": "Slack User",
+			"user": user,
+			"workspace": workspace,
+			"slack_user_id": slack_user_id,
+			"enabled": 1,
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	return doc.name
+
+
 def ensure_rule(title: str, **overrides):
 	if frappe.db.exists("Slack Notification Rule", title):
 		frappe.delete_doc("Slack Notification Rule", title, force=True, ignore_permissions=True)
