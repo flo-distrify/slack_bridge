@@ -206,6 +206,19 @@ must register the command itself. New subcommands need no Slack-side change.
 
 ---
 
+## Dynamic forms
+
+When the form's choices and fields live in *another* app — start a process, book a
+resource, run a parameterised job — a static **Slack Form** cannot express them. A
+**Slack Dynamic Form** instead points at three dotted method paths in the providing
+app (options / schema / submit), and the modal is built from that app's answers at
+runtime: a searchable picker first, then the picked entry's input form. Everything
+runs as the mapped Frappe user.
+
+Wire it up with a Command Route (Does: *Open Dynamic Form*) — no manifest change, no
+new scopes. The full provider contract, field vocabulary and a worked example live in
+[dynamic-forms.md](dynamic-forms.md).
+
 ## Logging calls from messages
 
 A **Slack Communication Shortcut** adds a *message shortcut* to Slack's context menu

@@ -101,6 +101,8 @@ def handle():
 	try:
 		if route.route_type == "Open Form":
 			result = run_open_form(route, context)
+		elif route.route_type == "Open Dynamic Form":
+			result = run_open_dynamic_form(route, context)
 		elif route.route_type == "Built-in":
 			result = run_builtin(route, context)
 		else:
@@ -153,6 +155,23 @@ def run_open_form(route, context) -> dict | None:
 			"docname": context.arguments or None,
 			"doctype": frappe.db.get_value("Slack Form", route.form, "document_type"),
 		},
+	)
+	# Slack shows the modal; an empty 200 avoids a duplicate message in the channel.
+	return None
+
+
+def run_open_dynamic_form(route, context) -> dict | None:
+	from slack_bridge.api.dynamic_forms import open_picker
+
+	if not context.user:
+		return {"response_type": "ephemeral", "text": _("Link your account first.")}
+
+	open_picker(
+		workspace=context.workspace,
+		trigger_id=context.trigger_id,
+		form_name=route.dynamic_form,
+		user=context.user,
+		context=context,
 	)
 	# Slack shows the modal; an empty 200 avoids a duplicate message in the channel.
 	return None
