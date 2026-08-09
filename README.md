@@ -33,6 +33,12 @@ audit line added — so nobody can approve the same thing twice.
 a document, to a Server Script, or to a whitelisted method. Built-in subcommands cover
 account linking, help, and GitHub-style channel subscriptions (`/erp subscribe <rule>`).
 
+**Dynamic forms.** A *Slack Dynamic Form* lets any other Frappe app serve modal forms
+to Slack through three dotted method paths (options / schema / submit) — a searchable
+picker, then an input form built from the provider's schema at runtime, submitted as
+the mapped user. No dependency in either direction; the provider app never imports
+slack_bridge. See [docs/dynamic-forms.md](docs/dynamic-forms.md).
+
 **Link previews.** Paste a document URL into Slack and it unfurls into a card with the
 fields you chose — gated on the sharer's read permission, so nothing leaks into a channel.
 

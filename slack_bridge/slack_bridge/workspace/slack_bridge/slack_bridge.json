@@ -1,4 +1,5 @@
 {
+ "app": "slack_bridge",
  "charts": [],
  "content": "[{\"id\": \"sb01blockhead\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Slack Bridge</b></span>\", \"col\": 12}}, {\"id\": \"sb02blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Notification Rule\", \"col\": 3}}, {\"id\": \"sb03blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Workspace\", \"col\": 3}}, {\"id\": \"sb04blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Message Log\", \"col\": 3}}, {\"id\": \"sb05blockshor\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Slack Bridge Settings\", \"col\": 3}}, {\"id\": \"sb06blockspac\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"sb07blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Setup\", \"col\": 4}}, {\"id\": \"sb08blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Notifications\", \"col\": 4}}, {\"id\": \"sb09blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Interactivity\", \"col\": 4}}, {\"id\": \"sb10blockcard\", \"type\": \"card\", \"data\": {\"card_name\": \"Logs\", \"col\": 4}}]",
  "creation": "2026-08-02 10:00:00.000000",
@@ -135,6 +136,18 @@
   },
   {
    "dependencies": "",
+   "description": "Modal forms whose fields come from another app at runtime",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Slack Dynamic Form",
+   "link_count": 0,
+   "link_to": "Slack Dynamic Form",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
    "description": "Route slash commands",
    "hidden": 0,
    "is_query_report": 0,
@@ -232,5 +245,6 @@
    "type": "DocType"
   }
  ],
- "title": "Slack Bridge"
+ "title": "Slack Bridge",
+ "type": "Workspace"
 }
