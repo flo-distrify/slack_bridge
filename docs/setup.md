@@ -114,6 +114,35 @@ Each recipient row resolves one of three ways:
 Add several rows to notify a channel *and* the document's owner from one rule. Each row
 can carry its own condition.
 
+### Daily digests
+
+The **Daily Digest** event turns a rule into a per-user summary DM instead of a
+per-document message. Once a day (at the first hourly scheduler tick after **Send
+After**, site timezone) the app collects matching documents, groups them by the **Group
+By User Field** — any Link-to-User field, or `owner` / `modified_by` — and sends every
+Slack-mapped user one DM covering their whole group. Users with nothing to report, and
+users without a Slack mapping, get nothing.
+
+A digest rule needs no recipient rows (the grouped user *is* the recipient) and cannot
+carry buttons. Templates see a different context: `docs` (the user's documents, up to
+50), `count` (the full number), `user`, and `doc_url` (the list view).
+
+Example — every assignee gets their open ToDos at 8:00:
+
+- **Document Type** `ToDo`, **Send On** `Daily Digest`
+- **Group By User Field** `allocated_to`, **Send After** `08:00:00`
+- **Document Filters** `{"status": "Open"}`
+- **Headline** `You have {{ count }} open ToDo(s)`
+- **Message**
+
+  ```jinja
+  {% for d in docs %}• {{ d.description | striptags | truncate(120) }}
+  {% endfor %}
+  ```
+
+**Send Test Message** delivers the digest immediately, ignoring the once-a-day and
+send-time gates; **Preview Message** renders the first user's digest without sending.
+
 ### Threading
 
 Set **Threading** to *Thread Under First Message* and every later event about the same

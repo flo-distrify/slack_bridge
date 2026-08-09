@@ -30,6 +30,36 @@ def render_message(rule, doc, extra: dict | None = None) -> tuple[list[dict], st
 	return body, bk.fallback_text(body)
 
 
+def render_digest_message(rule, extra: dict) -> tuple[list[dict], str]:
+	"""Digest variant of render_message: no single document, the link points at the list view.
+
+	Templates see the digest context (docs, count, user, doc_url) instead of doc.
+	"""
+	if rule.message_mode == "Block Kit":
+		rendered = render(rule.blocks_template, None, extra)
+		body = bk.validate_blocks(rendered, _("Blocks Template"))
+	else:
+		body = []
+		headline = render(rule.subject, None, extra).strip()
+		message = render(rule.message, None, extra).strip()
+
+		if headline and message:
+			body.append(bk.section(f"*{headline}*\n{message}"))
+		elif headline:
+			body.append(bk.section(f"*{headline}*"))
+		elif message:
+			body.append(bk.section(message))
+
+		if rule.attach_document_link and extra.get("doc_url"):
+			body.append(bk.context(f"<{extra['doc_url']}|{_('Open {0} list').format(rule.document_type)}>"))
+
+	if not body:
+		body.append(bk.section(f"*{_('{0} digest').format(rule.document_type)}*"))
+
+	body = bk.clamp_blocks(body)
+	return body, bk.fallback_text(body)
+
+
 def render_simple(rule, doc, extra: dict | None = None) -> list[dict]:
 	body = []
 

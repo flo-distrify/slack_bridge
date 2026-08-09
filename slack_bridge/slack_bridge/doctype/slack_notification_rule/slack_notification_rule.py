@@ -1,6 +1,8 @@
 # Copyright (c) 2026, Automates UG and contributors
 # For license information, please see license.txt
 
+import json
+
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -13,6 +15,7 @@ class SlackNotificationRule(Document):
 	def validate(self):
 		self.validate_field_references()
 		self.validate_templates()
+		self.validate_digest()
 
 		validate_condition_field(self.condition, _("Condition"))
 		for row in self.recipients:
@@ -43,6 +46,41 @@ class SlackNotificationRule(Document):
 					frappe.throw(
 						_("{0} has no field called {1}.").format(self.document_type, self.date_field)
 					)
+
+	def validate_digest(self):
+		if self.event != "Daily Digest":
+			if not self.recipients:
+				frappe.throw(_("Add at least one recipient."))
+			return
+
+		meta = frappe.get_meta(self.document_type)
+		field = meta.get_field(self.digest_group_by or "")
+		if self.digest_group_by not in ("owner", "modified_by") and not (
+			field and field.fieldtype == "Link" and field.options == "User"
+		):
+			frappe.throw(
+				_("Group By must be a Link-to-User field on {0} (or owner / modified_by).").format(
+					self.document_type
+				)
+			)
+
+		if self.digest_filters and self.digest_filters.strip():
+			try:
+				parsed = json.loads(self.digest_filters)
+			except ValueError:
+				frappe.throw(_("Document Filters must be valid JSON."))
+			if not isinstance(parsed, dict | list):
+				frappe.throw(_("Document Filters must be a JSON object or list."))
+
+		# Both are per-document concepts; a digest message covers many documents at once.
+		if self.get("buttons"):
+			frappe.throw(_("Buttons are not supported on Daily Digest rules."))
+		if self.recipients:
+			frappe.throw(
+				_("Daily Digest sends a DM to each user in {0} — leave Recipients empty.").format(
+					self.digest_group_by
+				)
+			)
 
 	def validate_templates(self):
 		validate_template_field(self.subject, _("Headline"))
@@ -81,6 +119,9 @@ class SlackNotificationRule(Document):
 		from slack_bridge.engine.context import evaluate_condition
 		from slack_bridge.engine.render import render_message
 
+		if self.event == "Daily Digest":
+			return self.preview_digest()
+
 		doc = self.get_sample_document(docname)
 		blocks, text = render_message(self, doc)
 
@@ -91,10 +132,37 @@ class SlackNotificationRule(Document):
 			"text": text,
 		}
 
+	def preview_digest(self) -> dict:
+		"""Render the first user's digest without sending anything."""
+		from slack_bridge.engine.digest import build_context, collect_groups
+		from slack_bridge.engine.render import render_digest_message
+
+		groups = collect_groups(self)
+		if not groups:
+			frappe.throw(_("No documents matched the digest filters."))
+
+		user, docs = next(iter(groups.items()))
+		blocks, text = render_digest_message(self, build_context(self, user, docs))
+
+		return {
+			"docname": _("{0} document(s) for {1}").format(len(docs), user),
+			"condition_passed": True,
+			"blocks": blocks,
+			"text": text,
+		}
+
 	@frappe.whitelist()
 	def send_test(self, docname: str | None = None) -> dict:
 		"""Render and deliver this rule for one document, ignoring its condition."""
 		frappe.only_for("System Manager")
+
+		if self.event == "Daily Digest":
+			from slack_bridge.engine.digest import run_digest_rule
+
+			queued = run_digest_rule(self.name, force=True)
+			if not queued:
+				frappe.throw(_("No matching documents for Slack-mapped users."))
+			return {"message": _("Queued {0} digest message(s).").format(queued)}
 
 		from slack_bridge.engine import outbox, recipients
 		from slack_bridge.engine.render import render_message

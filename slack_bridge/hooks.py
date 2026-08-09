@@ -49,6 +49,8 @@ scheduler_events = {
 	],
 	"hourly": [
 		"slack_bridge.engine.users.refresh_stale_workspaces",
+		# Daily Digest rules: due once per day, gated by each rule's send-after time.
+		"slack_bridge.engine.digest.trigger_digest_rules",
 	],
 }
 
