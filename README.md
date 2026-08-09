@@ -17,6 +17,11 @@ Jinja templates in either simple markdown or full Block Kit. Recipients resolve 
 ways — a fixed channel, a **field on the document** (`owner`, `sales_manager`, …), or a
 Jinja expression — so one rule covers "tell the owner and the #sales channel".
 
+**Daily digests.** A *Daily Digest* rule DMs each user one morning summary of the
+documents grouped on them — "your 4 open ToDos", "your overdue invoices" — grouped by
+any Link-to-User field (e.g. `allocated_to`), filtered by JSON filters plus a
+per-document condition, sent once a day after a configurable time.
+
 **Actions in.** Attach buttons to any message. A *Slack Action* applies a workflow
 transition, sets a field, runs a Server Script, or calls a whitelisted method. Every
 action runs **as the Frappe user the Slack account maps to**, so your existing

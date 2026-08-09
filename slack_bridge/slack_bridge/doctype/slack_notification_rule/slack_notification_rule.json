@@ -29,6 +29,10 @@
   "date_field",
   "days_in_advance",
   "method",
+  "digest_group_by",
+  "digest_send_after",
+  "digest_filters",
+  "last_digest_date",
   "sb_condition",
   "condition",
   "sb_message",
@@ -91,12 +95,12 @@
   },
   {
    "default": "New Document",
-   "description": "Value Change fires when a specific field changes. Date-based events are evaluated by the scheduler. Custom only fires when triggered from code.",
+   "description": "Value Change fires when a specific field changes. Date-based events are evaluated by the scheduler. Daily Digest sends each user one daily summary of the documents grouped on them. Custom only fires when triggered from code.",
    "fieldname": "event",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Send On",
-   "options": "New Document\nSave\nSubmit\nCancel\nDelete\nValue Change\nDays Before\nDays After\nMinutes Before\nMinutes After\nMethod\nCustom",
+   "options": "New Document\nSave\nSubmit\nCancel\nDelete\nValue Change\nDays Before\nDays After\nMinutes Before\nMinutes After\nDaily Digest\nMethod\nCustom",
    "reqd": 1
   },
   {
@@ -127,6 +131,38 @@
    "fieldtype": "Data",
    "label": "Method Name",
    "mandatory_depends_on": "eval:doc.event=='Method'"
+  },
+  {
+   "depends_on": "eval:doc.event=='Daily Digest'",
+   "description": "Field on the document that holds the user to notify — a Link to User (e.g. allocated_to), or owner / modified_by. Each user gets one DM listing their documents.",
+   "fieldname": "digest_group_by",
+   "fieldtype": "Data",
+   "label": "Group By User Field",
+   "mandatory_depends_on": "eval:doc.event=='Daily Digest'"
+  },
+  {
+   "default": "08:00:00",
+   "depends_on": "eval:doc.event=='Daily Digest'",
+   "description": "Sent at the first hourly scheduler tick after this time (site timezone), once per day.",
+   "fieldname": "digest_send_after",
+   "fieldtype": "Time",
+   "label": "Send After"
+  },
+  {
+   "depends_on": "eval:doc.event=='Daily Digest'",
+   "description": "Optional JSON filters applied when collecting documents. Example: {\"status\": \"Open\"}",
+   "fieldname": "digest_filters",
+   "fieldtype": "Code",
+   "label": "Document Filters (JSON)",
+   "options": "JSON"
+  },
+  {
+   "fieldname": "last_digest_date",
+   "fieldtype": "Date",
+   "hidden": 1,
+   "label": "Last Digest Date",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "fieldname": "sb_condition",
@@ -162,7 +198,7 @@
   },
   {
    "depends_on": "eval:doc.message_mode=='Simple'",
-   "description": "Jinja + Slack mrkdwn. Available: doc, frappe (safe subset), nowdate, doc_url.",
+   "description": "Jinja + Slack mrkdwn. Available: doc, frappe (safe subset), nowdate, doc_url. Daily Digest rules instead get: docs, count, user, doc_url (list view).",
    "fieldname": "message",
    "fieldtype": "Code",
    "label": "Message",
@@ -185,6 +221,7 @@
    "label": "Add Link to Document"
   },
   {
+   "depends_on": "eval:doc.event!='Daily Digest'",
    "fieldname": "sb_recipients",
    "fieldtype": "Section Break",
    "label": "Recipients"
@@ -193,10 +230,11 @@
    "fieldname": "recipients",
    "fieldtype": "Table",
    "label": "Recipients",
-   "options": "Slack Notification Recipient",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.event!='Daily Digest'",
+   "options": "Slack Notification Recipient"
   },
   {
+   "depends_on": "eval:doc.event!='Daily Digest'",
    "fieldname": "sb_buttons",
    "fieldtype": "Section Break",
    "label": "Buttons"
