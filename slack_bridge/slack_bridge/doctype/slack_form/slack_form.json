@@ -29,7 +29,8 @@
   "shortcut_description",
   "cb_shortcut",
   "shortcut_callback_id",
-  "shortcut_prefill_field"
+  "shortcut_prefill_field",
+  "reaction_emoji"
  ],
  "fields": [
   {
@@ -173,6 +174,14 @@
    "fieldname": "shortcut_prefill_field",
    "fieldtype": "Data",
    "label": "Prefill Field"
+  },
+  {
+   "default": "white_check_mark",
+   "depends_on": "eval:doc.message_shortcut",
+   "description": "Reaction added to the source message after a successful submission — the in-channel ✓. Clear to disable.",
+   "fieldname": "reaction_emoji",
+   "fieldtype": "Data",
+   "label": "Success Reaction"
   }
  ],
  "index_web_pages_for_search": 0,

@@ -212,8 +212,9 @@ Tick **Offer as Message Shortcut** on a Slack Form and it appears in every messa
 shortcuts menu (set a label ≤24 chars, a unique callback id, and optionally a
 **Prefill Field** — a Text/Long Text field that receives the message's text, with
 Slack link markup unwrapped). Right-click a message → the shortcut → adjust the
-prefilled form → submit; the document is created as the submitting user and they get
-a confirmation with a link. After enabling, regenerate the manifest and re-paste it
+prefilled form → submit; the document is created as the submitting user, the source
+message gets a **Success Reaction** (default ✅ — the in-channel proof it was handled),
+and the submitter gets a ✓ confirmation card linking the new document. After enabling, regenerate the manifest and re-paste it
 into the Slack app config so the menu entry appears — no reinstall, no new scopes.
 
 Example — "Create ToDo" next to "Log as Phone Call": a Slack Form on ToDo with a
