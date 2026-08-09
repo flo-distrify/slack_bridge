@@ -22,7 +22,13 @@ CALLBACK_ID = "sb_form"
 # ------------------------------------------------------------------ modal build
 
 
-def build_view(form, doc=None, private_metadata: dict | None = None, user: str | None = None) -> dict:
+def build_view(
+	form,
+	doc=None,
+	private_metadata: dict | None = None,
+	user: str | None = None,
+	prefills: dict | None = None,
+) -> dict:
 	context = {"slack_user": user}
 
 	view = {
@@ -31,7 +37,7 @@ def build_view(form, doc=None, private_metadata: dict | None = None, user: str |
 		"title": {"type": "plain_text", "text": form.get_modal_title()},
 		"submit": {"type": "plain_text", "text": (form.submit_label or _("Submit"))[:24]},
 		"close": {"type": "plain_text", "text": _("Cancel")},
-		"blocks": [build_input(row, doc, context, index) for index, row in enumerate(form.fields)],
+		"blocks": [build_input(row, doc, context, index, prefills) for index, row in enumerate(form.fields)],
 	}
 
 	metadata = dict(private_metadata or {})
@@ -45,11 +51,13 @@ def build_view(form, doc=None, private_metadata: dict | None = None, user: str |
 	return view
 
 
-def build_input(row, doc, context: dict, index: int) -> dict:
+def build_input(row, doc, context: dict, index: int, prefills: dict | None = None) -> dict:
 	block_id = f"f_{index}_{row.fieldname}"
 	default = None
 
-	if row.default_value:
+	if prefills and prefills.get(row.fieldname):
+		default = prefills[row.fieldname]
+	elif row.default_value:
 		try:
 			default = render(row.default_value, doc, context) if doc else row.default_value
 		except Exception:
@@ -136,7 +144,14 @@ def get_link_options(doctype: str) -> list[dict]:
 	return options or [{"text": {"type": "plain_text", "text": _("No options")}, "value": ""}]
 
 
-def open_form_modal(workspace, trigger_id: str, form_name: str, user: str, private_metadata: dict):
+def open_form_modal(
+	workspace,
+	trigger_id: str,
+	form_name: str,
+	user: str,
+	private_metadata: dict,
+	prefills: dict | None = None,
+):
 	"""Open a modal inline — trigger_id expires three seconds after Slack issues it."""
 	form = frappe.get_cached_doc("Slack Form", form_name)
 	if not form.enabled:
@@ -147,8 +162,71 @@ def open_form_modal(workspace, trigger_id: str, form_name: str, user: str, priva
 		if frappe.db.exists(private_metadata["doctype"], private_metadata["docname"]):
 			doc = frappe.get_doc(private_metadata["doctype"], private_metadata["docname"])
 
-	view = build_view(form, doc=doc, private_metadata=private_metadata, user=user)
+	view = build_view(form, doc=doc, private_metadata=private_metadata, user=user, prefills=prefills)
 	SlackClient(workspace).open_view(trigger_id, view)
+
+
+# --------------------------------------------------------------- message shortcut
+
+
+def handle_message_action(workspace, payload: dict) -> None:
+	"""A Slack Form offered in the message menu: open it with the message text prefilled."""
+	from slack_bridge.api.comm_log import demarkdown, notify_via_response_url
+
+	slack_user_id = (payload.get("user") or {}).get("id")
+	callback_id = payload.get("callback_id")
+
+	# action_ts is unique per invocation; Slack's redeliveries of one invocation dedupe.
+	key = base.idempotency_key("form_shortcut", callback_id, payload.get("action_ts"), slack_user_id)
+	log_name = base.claim(key, "Interactive", workspace.name, slack_user_id=slack_user_id)
+	if not log_name:
+		base.respond()
+		return
+
+	base.store_payload(log_name, payload)
+
+	form_name = frappe.db.get_value(
+		"Slack Form", {"shortcut_callback_id": callback_id, "message_shortcut": 1, "enabled": 1}, "name"
+	)
+	if not form_name:
+		base.finish(log_name, "Ignored", "No enabled form for shortcut")
+		notify_via_response_url(payload, _("This shortcut is not configured."))
+		return
+
+	mapping = base.resolve_user(workspace.name, slack_user_id)
+	if not mapping:
+		base.finish(log_name, "Ignored", "Unmapped Slack user")
+		# The HTTP response to a shortcut is not rendered by Slack — use the response_url.
+		notify_via_response_url(payload, base.link_prompt()["text"])
+		return
+
+	form = frappe.get_cached_doc("Slack Form", form_name)
+	prefills = {}
+	if form.shortcut_prefill_field:
+		text = demarkdown((payload.get("message") or {}).get("text") or "")
+		prefills[form.shortcut_prefill_field] = bk.truncate(text, 2900)
+
+	try:
+		open_form_modal(
+			workspace=workspace,
+			trigger_id=payload.get("trigger_id"),
+			form_name=form_name,
+			user=mapping.user,
+			private_metadata={
+				"channel": (payload.get("channel") or {}).get("id"),
+				"message_ts": (payload.get("message") or {}).get("ts"),
+				"response_url": payload.get("response_url"),
+				"log": log_name,
+			},
+			prefills=prefills,
+		)
+		base.finish(log_name, "Processed", f"Opened {form_name}")
+	except Exception:
+		frappe.log_error(title="Slack Bridge: could not open modal", message=frappe.get_traceback())
+		base.finish(log_name, "Failed", "Could not open modal")
+		notify_via_response_url(payload, _("Could not open the form — try again."))
+
+	base.respond()
 
 
 # ------------------------------------------------------------------- submission
