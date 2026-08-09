@@ -59,7 +59,8 @@ def handle():
 	)
 
 	if not log_name:
-		base.respond()
+		# A Slack retry of an already-claimed command must not print "{}" either.
+		base.respond_empty()
 		return
 
 	mapping = base.resolve_user(workspace.name, slack_user_id, require_actions=False)
@@ -114,7 +115,11 @@ def handle():
 		return
 
 	base.finish(log_name, "Processed", route.name)
-	base.respond(result or {})
+	if result:
+		base.respond(result)
+	else:
+		# A modal was opened; any body — even "{}" — would render as a channel message.
+		base.respond_empty()
 
 
 def find_route(workspace: str, command: str, subcommand: str):
