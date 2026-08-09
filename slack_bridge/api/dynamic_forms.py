@@ -468,13 +468,9 @@ def execute_submit(
 
 
 def send_confirmation(workspace, slack_user_id: str, channel: str | None, text: str) -> None:
-	client = SlackClient(workspace)
+	from slack_bridge.slack.client import confirm_to_user
 
 	try:
-		if channel:
-			client.post_ephemeral(channel=channel, user=slack_user_id, text=text)
-		else:
-			dm = client.open_dm(slack_user_id)
-			client.post_message(channel=dm, text=text, blocks=[bk.section(text)])
+		confirm_to_user(SlackClient(workspace), channel, slack_user_id, text)
 	except Exception:
 		frappe.log_error(title="Slack Bridge: confirmation failed", message=frappe.get_traceback())
