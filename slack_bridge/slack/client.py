@@ -98,9 +98,7 @@ class SlackClient:
 		if use_json:
 			headers["Content-Type"] = "application/json; charset=utf-8"
 			payload = {k: v for k, v in params.items() if v is not None}
-			response = requests.post(
-				url, headers=headers, data=json.dumps(payload), timeout=DEFAULT_TIMEOUT
-			)
+			response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=DEFAULT_TIMEOUT)
 		else:
 			payload = {
 				k: (json.dumps(v) if isinstance(v, list | dict) else v)
@@ -136,8 +134,7 @@ class SlackClient:
 			# idea which permission to add or that a reinstall is required.
 			if code == "missing_scope" and data.get("needed"):
 				missing = sorted(
-					set((data.get("needed") or "").split(","))
-					- set((data.get("provided") or "").split(","))
+					set((data.get("needed") or "").split(",")) - set((data.get("provided") or "").split(","))
 				)
 				detail = _(
 					" — this Slack app is missing the scope(s) {0}. Add them to the app "
@@ -173,9 +170,7 @@ class SlackClient:
 		return self.call("chat.update", channel=channel, ts=ts, blocks=blocks, text=text, **kwargs)
 
 	def post_ephemeral(self, channel: str, user: str, text=None, blocks=None, **kwargs) -> dict:
-		return self.call(
-			"chat.postEphemeral", channel=channel, user=user, text=text, blocks=blocks, **kwargs
-		)
+		return self.call("chat.postEphemeral", channel=channel, user=user, text=text, blocks=blocks, **kwargs)
 
 	def unfurl(self, channel: str, ts: str, unfurls: dict, unfurl_id=None, source=None) -> dict:
 		# When Slack gives us unfurl_id/source we must use them (the channel/ts pair is
@@ -282,3 +277,30 @@ def respond(response_url: str, payload: dict) -> None:
 		requests.post(response_url, json=payload, timeout=DEFAULT_TIMEOUT)
 	except Exception:
 		frappe.log_error(title="Slack response_url delivery failed", message=frappe.get_traceback())
+
+
+def confirm_to_user(client: SlackClient, channel: str | None, slack_user_id: str, text: str) -> None:
+	"""Deliver a confirmation: ephemeral in the origin channel, DM as the safety net.
+
+	chat.postEphemeral needs channel membership (chat:write.public does not cover it),
+	so the first confirmation in a channel the bot never joined fails with
+	channel_not_found. Join public channels on demand and retry; when that fails too
+	(private channel, missing scope), the person still gets a DM rather than nothing.
+	"""
+	from slack_bridge.slack import blocks as bk
+
+	if channel:
+		try:
+			client.post_ephemeral(channel=channel, user=slack_user_id, text=text)
+			return
+		except SlackError as e:
+			if e.code in ("channel_not_found", "not_in_channel"):
+				try:
+					client.join_channel(channel)
+					client.post_ephemeral(channel=channel, user=slack_user_id, text=text)
+					return
+				except Exception:
+					pass
+
+	dm = client.open_dm(slack_user_id)
+	client.post_message(channel=dm, text=text, blocks=[bk.section(text)])

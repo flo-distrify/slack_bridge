@@ -588,12 +588,9 @@ def confirm_logged(workspace, config, ref, metadata: dict, slack_user_id: str) -
 		except Exception:
 			pass
 
-	client = SlackClient(workspace)
+	from slack_bridge.slack.client import confirm_to_user
+
 	try:
-		if metadata.get("channel"):
-			client.post_ephemeral(channel=metadata["channel"], user=slack_user_id, text=text)
-		else:
-			dm = client.open_dm(slack_user_id)
-			client.post_message(channel=dm, text=text, blocks=[bk.section(text)])
+		confirm_to_user(SlackClient(workspace), metadata.get("channel"), slack_user_id, text)
 	except Exception:
 		frappe.log_error(title="Slack Bridge: confirmation failed", message=frappe.get_traceback())
