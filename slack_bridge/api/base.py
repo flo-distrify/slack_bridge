@@ -37,6 +37,20 @@ def respond(payload: dict | None = None, status: int = 200) -> None:
 	frappe.local.response["http_status_code"] = status
 
 
+def respond_empty() -> None:
+	"""Send a truly empty 200.
+
+	Slash commands render ANY response body as a message — even the "{}" Frappe
+	produces when serialising an empty response dict shows up in the channel as
+	literal braces. The binary response type is the one way to emit zero bytes.
+	"""
+	frappe.local.response.clear()
+	frappe.clear_messages()
+	frappe.local.response["type"] = "binary"
+	frappe.local.response["filename"] = "empty"
+	frappe.local.response["filecontent"] = b""
+
+
 def get_raw_body() -> bytes:
 	return frappe.request.get_data() or b""
 
