@@ -296,14 +296,40 @@ def submit_form(workspace, view: dict, metadata: dict, user: str, slack_user_id:
 	doc = save_document(form, values, metadata, user)
 	base.finish(log_name, "Processed", f"{doc.doctype} {doc.name}")
 
+	# The ✓ reaction and the confirmation are Slack round-trips (up to four when the
+	# origin channel needs the DM fallback). Slack voids the modal ack after three
+	# seconds and shows "trouble connecting", so they must not delay the response.
+	frappe.enqueue(
+		"slack_bridge.api.forms.deliver_submit_feedback",
+		queue="short",
+		enqueue_after_commit=True,
+		workspace=workspace.name,
+		form_name=form.name,
+		doctype=doc.doctype,
+		docname=doc.name,
+		metadata=metadata,
+		slack_user_id=slack_user_id,
+	)
+	return {"response_action": "clear"}
+
+
+def deliver_submit_feedback(
+	workspace: str, form_name: str, doctype: str, docname: str, metadata: dict, slack_user_id: str
+) -> None:
+	"""Background tail of submit_form: the in-channel ✓ and the confirmation message."""
+	ws = frappe.get_cached_doc("Slack Workspace", workspace)
+	form = frappe.get_cached_doc("Slack Form", form_name)
+
 	# A shortcut submission marks its source message as handled — the in-channel ✓.
 	if metadata.get("message_ts") and form.get("reaction_emoji"):
 		from slack_bridge.api.comm_log import react_to_source
 
-		react_to_source(workspace, form, metadata)
+		react_to_source(ws, form, metadata)
 
-	notify_submitter(workspace, form, doc, metadata, slack_user_id)
-	return {"response_action": "clear"}
+	if not frappe.db.exists(doctype, docname):
+		return  # deleted between save and job — nothing to link to
+
+	notify_submitter(ws, form, frappe.get_doc(doctype, docname), metadata, slack_user_id)
 
 
 def save_document(form, values: dict, metadata: dict, user: str):
