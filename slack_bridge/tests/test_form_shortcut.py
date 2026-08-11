@@ -176,7 +176,25 @@ class TestShortcutFlow(CommLogTestCase):
 			self.post_payload(payload)
 
 		self.assertEqual(frappe.local.response.get("response_action"), "clear")
-		self.assertTrue(frappe.db.exists("Note", {"title": marker}))
+		docname = frappe.db.get_value("Note", {"title": marker})
+		self.assertTrue(docname)
+
+		# The ack must not spend its three-second budget on Slack round-trips — no
+		# reaction or confirmation before the response; both run as a background job.
+		self.assertFalse(any("reactions.add" in c.args[0] for c in mocked.call_args_list))
+
+		from slack_bridge.api.forms import deliver_submit_feedback
+
+		metadata = json.loads(payload["view"]["private_metadata"])
+		with fake_slack() as mocked:
+			deliver_submit_feedback(
+				workspace=WORKSPACE,
+				form_name=form.name,
+				doctype="Note",
+				docname=docname,
+				metadata=metadata,
+				slack_user_id=SLACK_USER_ID,
+			)
 
 		urls = [c.args[0] for c in mocked.call_args_list]
 		# The source message gets the success reaction, the submitter a ✓ confirmation.
