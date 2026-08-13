@@ -12,13 +12,6 @@ after_install = "slack_bridge.install.after_install"
 after_migrate = "slack_bridge.install.after_migrate"
 
 # ---------------------------------------------------------------------------
-# Distrify Processes message channel (name-only coupling, like slack_bridge_doc_url
-# in the other direction): distrify_processes reads this hook and resolves the
-# dotted path; neither app imports the other. Inert when processes isn't installed.
-# ---------------------------------------------------------------------------
-process_message_channels = ["slack_bridge.integrations.process_channel.get_channels"]
-
-# ---------------------------------------------------------------------------
 # Document events
 #
 # The wildcard handler is on the hot path of every document write in the site, so
