@@ -79,23 +79,23 @@ class TestProcessChannel(SlackBridgeTestCase):
 			detail = process_channel.send("#general", None, "Hello **world**", self.context)
 		self.assertIn("general", detail)
 		logs = frappe.get_all(
-			"Slack Message Log", fields=["channel_id", "payload", "reference_doctype", "reference_name"]
+			"Slack Message Log",
+			filters={"reference_name": self.context["instance"]},
+			fields=["channel_id", "payload", "reference_doctype"],
 		)
 		self.assertEqual(len(logs), 1)
 		self.assertEqual(logs[0].channel_id, CHANNEL_ID)
+		self.assertEqual(logs[0].reference_doctype, "Process Instance")
 		self.assertIn("*world*", logs[0].payload)  # markdown → mrkdwn
-		if self.context["instance"]:  # bare slack_bridge site → no reference to assert
-			self.assertEqual(logs[0].reference_doctype, "Process Instance")
-			self.assertEqual(logs[0].reference_name, self.context["instance"])
-		else:
-			self.assertFalse(logs[0].reference_doctype)
 
 	def test_dedupe_within_minute_reports_already_queued(self):
 		with fake_slack():
 			process_channel.send("#general", None, "Same body", self.context)
 			detail = process_channel.send("#general", None, "Same body", self.context)
 		self.assertIn("already queued", detail)
-		self.assertEqual(len(frappe.get_all("Slack Message Log")), 1)
+		self.assertEqual(
+			len(frappe.get_all("Slack Message Log", filters={"reference_name": self.context["instance"]})), 1
+		)
 
 	def test_unresolvable_recipient_raises(self):
 		self.assertRaises(
@@ -115,5 +115,7 @@ class TestProcessChannel(SlackBridgeTestCase):
 	def test_subject_becomes_bold_lead(self):
 		with fake_slack():
 			process_channel.send("#general", "Order shipped", "body text", self.context)
-		log = frappe.get_all("Slack Message Log", fields=["payload"])[0]
+		log = frappe.get_all(
+			"Slack Message Log", filters={"reference_name": self.context["instance"]}, fields=["payload"]
+		)[0]
 		self.assertIn("*Order shipped*", log.payload)

@@ -57,16 +57,6 @@ def send(recipient: str, subject: str | None, body: str, context: dict) -> str |
 	if context.get("instance_subject"):
 		message_blocks.append(blocks.context(_("Process run: {0}").format(context["instance_subject"])))
 
-	# Reference the run only when the caller actually named one — the reference
-	# doctype is a Link, and "Process Instance" only validates where the processes
-	# app is installed (which is guaranteed for hook-driven calls, but this module
-	# must also stand alone, e.g. under this app's own test suite).
-	reference = (
-		{"reference_doctype": "Process Instance", "reference_name": context["instance"]}
-		if context.get("instance")
-		else {}
-	)
-
 	sent = []
 	for target in _split(recipient):
 		resolved = _resolve_target(target, workspace, client)
@@ -80,8 +70,9 @@ def send(recipient: str, subject: str | None, body: str, context: dict) -> str |
 			channel_id=resolved["channel_id"],
 			blocks=message_blocks,
 			text=blocks.fallback_text(message_blocks),
+			reference_doctype="Process Instance",
+			reference_name=context.get("instance"),
 			event_method=f"process-node:{context.get('node_id')}",
-			**reference,
 		)
 		label = resolved.get("label") or resolved["channel_id"]
 		sent.append(label if result else f"{label} ({_('already queued')})")
