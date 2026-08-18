@@ -55,15 +55,19 @@ def handle():
 		queue="short",
 		enqueue_after_commit=True,
 		workspace=workspace.name,
-		event=event,
+		# NOT `event=`: that is one of frappe.enqueue's own parameters, so it would be
+		# consumed by enqueue itself and never reach the job — process() then dies with
+		# "missing 1 required positional argument" and no event is ever handled.
+		slack_event=event,
 		log_name=log_name,
 	)
 
 	base.respond()
 
 
-def process(workspace: str, event: dict, log_name: str) -> None:
+def process(workspace: str, slack_event: dict, log_name: str) -> None:
 	"""Background half — the ack has already gone out."""
+	event = slack_event
 	handler = {
 		"link_shared": handle_link_shared,
 		"app_home_opened": handle_app_home,
