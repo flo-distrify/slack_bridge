@@ -194,6 +194,25 @@ class SlackClient:
 	def add_reaction(self, channel: str, timestamp: str, name: str) -> dict:
 		return self.call("reactions.add", channel=channel, timestamp=timestamp, name=name)
 
+	def remove_reaction(self, channel: str, timestamp: str, name: str) -> dict:
+		"""Remove the bot's own reaction (reactions:write)."""
+		return self.call("reactions.remove", channel=channel, timestamp=timestamp, name=name)
+
+	def create_channel(self, name: str, is_private: bool = False) -> dict:
+		"""Create a channel (channels:manage; groups:write for a private one). The bot
+		is its first member. Returns Slack's channel object."""
+		return self.call("conversations.create", name=name, is_private=is_private)["channel"]
+
+	def invite_to_channel(self, channel: str, slack_user_ids: list[str]) -> dict:
+		"""Invite up to 1000 users to a channel the bot is in (channels:manage)."""
+		return self.call("conversations.invite", channel=channel, users=",".join(slack_user_ids))
+
+	def set_channel_purpose(self, channel: str, purpose: str) -> dict:
+		return self.call("conversations.setPurpose", channel=channel, purpose=purpose[:250])
+
+	def user_info(self, slack_user_id: str) -> dict:
+		return self.call("users.info", user=slack_user_id, use_json=False).get("user") or {}
+
 	def join_channel(self, channel: str) -> dict:
 		"""Join a public channel (channels:join). Private channels need an /invite."""
 		return self.call("conversations.join", channel=channel)

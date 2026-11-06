@@ -24,8 +24,11 @@
   "sb_slack",
   "message_ts",
   "thread_ts",
+  "thread_role",
   "cb_slack",
   "dedupe_key",
+  "reactions_wanted",
+  "reactions_applied",
   "sb_delivery",
   "attempts",
   "next_attempt_at",
@@ -96,12 +99,21 @@
    "fieldname": "message_ts",
    "fieldtype": "Data",
    "label": "Message Timestamp",
-   "read_only": 1
+   "read_only": 1,
+   "search_index": 1
   },
   {
    "fieldname": "thread_ts",
    "fieldtype": "Data",
    "label": "Thread Timestamp",
+   "read_only": 1
+  },
+  {
+   "description": "Root: the one message a document's thread hangs under (slack_bridge.threads). Reply: a message in that thread.",
+   "fieldname": "thread_role",
+   "fieldtype": "Select",
+   "label": "Thread Role",
+   "options": "\nRoot\nReply",
    "read_only": 1
   },
   {
@@ -115,6 +127,19 @@
    "no_copy": 1,
    "read_only": 1,
    "unique": 1
+  },
+  {
+   "description": "The bot reactions the thread's first message should carry (comma separated).",
+   "fieldname": "reactions_wanted",
+   "fieldtype": "Data",
+   "label": "Reactions Wanted",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reactions_applied",
+   "fieldtype": "Data",
+   "label": "Reactions Applied",
+   "read_only": 1
   },
   {
    "fieldname": "sb_delivery",
@@ -158,7 +183,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-08-02 10:00:00.000000",
+ "modified": "2026-11-06 17:00:00.000000",
  "modified_by": "Administrator",
  "module": "Slack Bridge",
  "name": "Slack Message Log",
