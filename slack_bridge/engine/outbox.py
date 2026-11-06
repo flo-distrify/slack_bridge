@@ -17,6 +17,7 @@ import time
 import frappe
 from frappe.utils import add_to_date, now_datetime
 
+from slack_bridge import threads
 from slack_bridge.slack.client import SlackClient, SlackError, SlackRateLimited
 
 PACING_CACHE = "slack_bridge_channel_pace"
@@ -111,20 +112,39 @@ def deliver(log_name: str) -> None:
 	if log.status in ("Sent", "Dead", "Skipped"):
 		return
 
-	if not channel_ready(log.channel_id):
-		# Waiting on the per-channel pace is not a failure, so it must not consume
-		# the retry budget — otherwise a busy channel would kill its own messages.
-		defer(log, seconds=2)
-		return
-
 	payload = json.loads(log.payload or "{}")
 	blocks = payload.get("blocks") or []
 	text = payload.get("text") or ""
 	thread_mode = payload.get("thread_mode") or "New Message"
 
+	# A reply in a document thread (slack_bridge.threads) waits for the thread's first
+	# message and goes where that one went.
+	root = None
+	if thread_mode == threads.REPLY_MODE:
+		root = threads.find_root(log.reference_doctype, log.reference_name, live_only=False)
+		if not root or root.status in ("Dead", "Skipped"):
+			fail(log, "The first message of the thread was never delivered.", status="Skipped")
+			return
+		if root.status != "Sent":
+			defer(log, seconds=5)
+			return
+		log.channel_id = root.channel_id
+
+	if log.channel_id and not channel_ready(log.channel_id):
+		# Waiting on the per-channel pace is not a failure, so it must not consume
+		# the retry budget — otherwise a busy channel would kill its own messages.
+		defer(log, seconds=2)
+		return
+
 	try:
 		client = SlackClient(log.workspace)
-		previous = find_previous_message(log) if thread_mode != "New Message" else None
+		# A row that names its channel gets the id now; the channel is created on first use.
+		threads.resolve_log_channel(log, payload)
+		previous = (
+			find_previous_message(log) if thread_mode not in ("New Message", threads.REPLY_MODE) else None
+		)
+		if root:
+			previous = root
 
 		if thread_mode == "Update Previous Message" and previous:
 			response = client.update_message(
@@ -145,8 +165,10 @@ def deliver(log_name: str) -> None:
 		log.attempts = (log.attempts or 0) + 1
 		log.last_error = None
 		log.next_attempt_at = None
+		rewritten = threads.before_delivered_save(log)
 		log.save(ignore_permissions=True)
 		mark_channel_sent(log.channel_id)
+		threads.after_delivery(log, rewritten)
 
 	except SlackRateLimited as e:
 		reschedule(log, seconds=e.retry_after, error=str(e))
@@ -216,6 +238,9 @@ def drain() -> None:
 			deliver(row.name)
 		except Exception:
 			frappe.log_error(title="Slack Bridge: drain failed", message=frappe.get_traceback())
+
+	# Document threads: reactions Slack did not take the first time.
+	threads.reconcile()
 
 
 def find_previous_message(log):

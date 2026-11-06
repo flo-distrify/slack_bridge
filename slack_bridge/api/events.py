@@ -34,6 +34,15 @@ def handle():
 
 	event = payload.get("event") or {}
 
+	# With message.channels subscribed, Slack sends everything said in the bot's
+	# channels. Only a reply in a document thread is ours; the rest leaves no trace.
+	if event.get("type") == "message":
+		from slack_bridge.threads import wants_event
+
+		if not wants_event(workspace.name, event):
+			base.respond()
+			return
+
 	# Slack redelivers on slow acks; the event_id makes replays harmless.
 	key = base.idempotency_key(payload.get("event_id"), event.get("type"), event.get("event_ts"))
 	log_name = base.claim(
@@ -72,6 +81,7 @@ def process(workspace: str, slack_event: dict, log_name: str) -> None:
 		"link_shared": handle_link_shared,
 		"app_home_opened": handle_app_home,
 		"app_mention": handle_app_mention,
+		"message": handle_message,
 	}.get(event.get("type"))
 
 	if not handler:
@@ -99,6 +109,13 @@ def handle_app_home(workspace: str, event: dict) -> str:
 	from slack_bridge.api.home import publish_home
 
 	return publish_home(workspace, event.get("user"))
+
+
+def handle_message(workspace: str, event: dict) -> str:
+	"""A reply in a document thread goes to the app that owns the document."""
+	from slack_bridge.threads import handle_message_event
+
+	return handle_message_event(workspace, event)
 
 
 def handle_app_mention(workspace: str, event: dict) -> str:

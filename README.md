@@ -41,6 +41,11 @@ picker, then an input form built from the provider's schema at runtime, submitte
 the mapped user. No dependency in either direction; the provider app never imports
 slack_bridge. See [docs/dynamic-forms.md](docs/dynamic-forms.md).
 
+**Document threads.** Another app can keep a document visible in Slack: one message per
+document in a channel that is created on first use, replies in its thread delivered back
+to the app, and bot reactions that follow the document's state — four functions and one
+hook, no import in either direction. See [docs/document-threads.md](docs/document-threads.md).
+
 **Link previews.** Paste a document URL into Slack and it unfurls into a card with the
 fields you chose — gated on the sharer's read permission, so nothing leaks into a channel.
 
