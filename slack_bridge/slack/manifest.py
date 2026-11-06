@@ -17,7 +17,11 @@ import frappe
 
 BOT_SCOPES = [
 	"app_mentions:read",
+	# Document threads (slack_bridge.threads): read the replies in the bot's channels,
+	# create a channel on first use and invite the team to it.
+	"channels:history",
 	"channels:join",
+	"channels:manage",
 	"channels:read",
 	"chat:write",
 	"chat:write.public",
@@ -37,6 +41,8 @@ SUBSCRIBED_EVENTS = [
 	"app_home_opened",
 	"app_mention",
 	"link_shared",
+	# Replies in a document's thread (public channels the bot is a member of).
+	"message.channels",
 ]
 
 

@@ -46,7 +46,9 @@ generated per customer, so these apply to every install:
 | --- | --- |
 | `files:read` | Reads Slack's native transcript of voice clips for the comm-log shortcut |
 | `channels:join` | Lets the bot join public channels to place the synced-✅ reaction |
-| `reactions:write` | The synced-✅ marker on logged messages |
+| `reactions:write` | The synced-✅ marker on logged messages; state reactions on document threads |
+| `channels:manage` | Document threads: create the channel on first use and invite the team |
+| `channels:history` | Document threads: receive replies in the bot's channels (`message.channels`) |
 | remaining scopes | Core messaging/commands/unfurls, unchanged since the first release |
 
 ## Cleanup before submission
